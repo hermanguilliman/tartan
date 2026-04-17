@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tartan Generator</title>
+
+<style>
+:root{
+    --bg:#0f1116;
+    --panel:#1a1d26;
+    --accent:#4cc9f0;
+    --text:#fff;
+}
+body{
+    margin:0;
+    font-family:system-ui,-apple-system,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+header{
+    padding:20px;
+    font-size:22px;
+    font-weight:bold;
+}
+.container{
+    width:100%;
+    max-width:1200px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    padding:15px;
+}
+@media(min-width:900px){
+    .container{flex-direction:row;}
+}
+.panel{
+    background:var(--panel);
+    padding:20px;
+    border-radius:14px;
+    flex:1;
+}
+.controls{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+label{font-size:14px;opacity:.8;}
+select,input{
+    padding:8px;
+    border-radius:8px;
+    border:none;
+    margin-top:5px;
+}
+button{
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    cursor:pointer;
+    font-weight:bold;
+}
+.generate{background:var(--accent);color:#000;}
+.random{background:#f72585;color:#fff;}
+.download{background:#2ecc71;}
+canvas{
+    width:100%;
+    height:auto;
+    border-radius:14px;
+    background:#000;
+}
+</style>
+</head>
+
+<body>
+
+<header>🎨 Генератор тартана</header>
+
+<div class="container">
+
+<div class="panel">
+<div class="controls">
+
+<div>
+<label>Доминирующий цвет</label>
+<select id="dominant">
+<option value="any">Любой</option>
+<option value="red">Красный</option>
+<option value="green">Зелёный</option>
+<option value="blue">Синий</option>
+<option value="purple">Фиолетовый</option>
+<option value="yellow">Жёлтый</option>
+</select>
+</div>
+
+<div>
+<label>Тон</label>
+<select id="tone">
+<option value="any">Любой</option>
+<option value="dark">Тёмный</option>
+<option value="pastel">Пастельный</option>
+</select>
+</div>
+
+<div>
+<label><input type="checkbox" id="historical" checked>
+Исторический стиль</label>
+</div>
+
+<div>
+<label><input type="checkbox" id="texture">
+Текстура ткани</label>
+</div>
+
+<div>
+<label>Размер (px)</label>
+<input type="range" id="size" min="256" max="2048" value="512">
+<span id="sizeLabel">512</span>
+</div>
+
+<button class="generate" id="generateBtn">Сгенерировать</button>
+<button class="random" id="randomBtn">🎲 Random</button>
+<button class="download" id="downloadBtn">💾 Скачать PNG</button>
+
+</div>
+</div>
+
+<div class="panel">
+<canvas id="canvas"></canvas>
+</div>
+
+</div>
+
+<script>
+const DOMINANT_HUES={
+red:[0.0,0.05],
+green:[0.25,0.4],
+blue:[0.55,0.7],
+purple:[0.75,0.85],
+yellow:[0.12,0.18]
+};
+
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+
+function rand(a,b){return Math.random()*(b-a)+a;}
+
+function hsvToRgb(h,s,v){
+let r,g,b,i=Math.floor(h*6),f=h*6-i;
+let p=v*(1-s),q=v*(1-f*s),t=v*(1-(1-f)*s);
+switch(i%6){
+case 0:r=v;g=t;b=p;break;
+case 1:r=q;g=v;b=p;break;
+case 2:r=p;g=v;b=t;break;
+case 3:r=p;g=q;b=v;break;
+case 4:r=t;g=p;b=v;break;
+case 5:r=v;g=p;b=q;break;
+}
+return[r*255,g*255,b*255];
+}
+
+function generateBase(){
+let dominant=dominantEl.value;
+let tone=toneEl.value;
+let historical=historicalEl.checked;
+
+let h=dominant==="any"?Math.random():rand(...DOMINANT_HUES[dominant]);
+
+let s,v;
+if(tone==="dark"){s=rand(0.5,0.9);v=rand(0.3,0.6);}
+else if(tone==="pastel"){s=rand(0.2,0.4);v=rand(0.8,1);}
+else{s=rand(0.4,0.9);v=rand(0.4,0.9);}
+
+if(historical){s*=0.7;v*=0.8;}
+
+return hsvToRgb(h,s,v);
+}
+
+function accent(historical){
+if(historical)
+return[[20,20,20],[230,230,230],[120,120,120]][Math.floor(Math.random()*3)];
+return Math.random()>0.5?[0,0,0]:[255,255,255];
+}
+
+function generate(){
+
+let size=parseInt(sizeEl.value);
+sizeLabel.textContent=size;
+
+canvas.width=size;
+canvas.height=size;
+
+let base=generateBase();
+let historical=historicalEl.checked;
+let texture=textureEl.checked;
+
+let sett=[
+[base,Math.floor(rand(60,140))],
+[accent(historical),Math.floor(rand(8,30))],
+[base,Math.floor(rand(20,60))],
+[accent(historical),Math.floor(rand(4,12))],
+[base,Math.floor(rand(20,60))],
+[accent(historical),Math.floor(rand(8,24))],
+[base,Math.floor(rand(40,100))]
+];
+
+let pattern=[];
+sett.forEach(([c,w])=>{
+for(let i=0;i<w;i++)pattern.push(c);
+});
+pattern=pattern.concat(pattern.slice().reverse());
+let plen=pattern.length;
+
+let img=ctx.createImageData(size,size);
+let data=img.data;
+
+for(let x=0;x<size;x++){
+for(let y=0;y<size;y++){
+
+let cx=pattern[x%plen];
+let cy=pattern[y%plen];
+
+let r,g,b;
+
+if(cx[0]==cy[0]&&cx[1]==cy[1]&&cx[2]==cy[2])
+[r,g,b]=cx;
+else{
+r=Math.min(255,cx[0]*0.6+cy[0]*0.6);
+g=Math.min(255,cx[1]*0.6+cy[1]*0.6);
+b=Math.min(255,cx[2]*0.6+cy[2]*0.6);
+}
+
+// === Текстура ткани ===
+if(texture){
+let weave=((x%4<2)^(y%4<2))?10:-10;
+let noise=rand(-8,8);
+r=Math.min(255,Math.max(0,r+weave+noise));
+g=Math.min(255,Math.max(0,g+weave+noise));
+b=Math.min(255,Math.max(0,b+weave+noise));
+}
+
+let i=(y*size+x)*4;
+data[i]=r;
+data[i+1]=g;
+data[i+2]=b;
+data[i+3]=255;
+
+}
+}
+
+ctx.putImageData(img,0,0);
+}
+
+// === UI ===
+
+const dominantEl=document.getElementById("dominant");
+const toneEl=document.getElementById("tone");
+const historicalEl=document.getElementById("historical");
+const textureEl=document.getElementById("texture");
+const sizeEl=document.getElementById("size");
+const sizeLabel=document.getElementById("sizeLabel");
+
+document.getElementById("generateBtn").addEventListener("click",generate);
+
+document.getElementById("randomBtn").addEventListener("click",()=>{
+let selects=document.querySelectorAll("select");
+selects.forEach(s=>s.selectedIndex=Math.floor(Math.random()*s.options.length));
+historicalEl.checked=Math.random()>0.5;
+textureEl.checked=Math.random()>0.5;
+generate();
+});
+
+document.getElementById("downloadBtn").addEventListener("click",()=>{
+let link=document.createElement("a");
+link.download="tartan.png";
+link.href=canvas.toDataURL();
+link.click();
+});
+
+generate();
+</script>
+
+</body>
+</html>
