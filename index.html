@@ -1,456 +1,1053 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tartan Generator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tartan Generator</title>
+    <style>
+        :root {
+            --bg: #0a0c12;
+            --panel: #12151f;
+            --panel2: #1a1f2e;
+            --accent: #00f5ff;
+            --text: #e0e7ff;
+            --text-muted: #a0a8c0;
+            --border: #2a3142;
+            --success: #22c55e;
+            --danger: #ff4444;
+        }
 
-<style>
-:root {
-    --bg: #0a0c12;
-    --panel: #12151f;
-    --panel2: #1a1f2e;
-    --accent: #00f5ff;
-    --accent-dark: #00b8c2;
-    --text: #e0e7ff;
-    --text-muted: #a0a8c0;
-    --border: #2a3142;
-}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-* {
-    box-sizing: border-box;
-}
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 15px 40px;
+        }
 
-body {
-    margin: 0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px 15px;
-}
+        header {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin: 10px 0 6px;
+            color: var(--accent);
+            text-shadow: 0 0 24px rgba(0, 245, 255, 0.25);
+        }
 
-header {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: var(--accent);
-    text-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
-}
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            text-align: center;
+        }
 
-.subtitle {
-    font-size: 15px;
-    color: var(--text-muted);
-    margin-bottom: 30px;
-    text-align: center;
-    max-width: 420px;
-}
+        .container {
+            width: 100%;
+            max-width: 1300px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
 
-.container {
-    width: 100%;
-    max-width: 1280px;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 24px;
-}
+        @media (min-width: 1000px) {
+            .container {
+                grid-template-columns: 360px 1fr;
+            }
+        }
 
-@media (min-width: 960px) {
-    .container {
-        grid-template-columns: 380px 1fr;
-    }
-}
+        .panel {
+            background: var(--panel);
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+            transition: box-shadow 0.3s;
+        }
 
-.panel {
-    background: var(--panel);
-    border-radius: 20px;
-    padding: 28px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--border);
-    transition: all 0.3s ease;
-}
+        .panel:hover {
+            box-shadow: 0 12px 36px rgba(0, 245, 255, 0.07);
+        }
 
-.panel:hover {
-    box-shadow: 0 15px 40px rgba(0, 245, 255, 0.08);
-}
+        /* Section headers */
+        .sec {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent);
+            opacity: 0.65;
+            margin: 18px 0 10px;
+        }
 
-.controls {
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
-}
+        .sec:first-child {
+            margin-top: 0;
+        }
 
-.control-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
+        .divider {
+            height: 1px;
+            background: var(--border);
+            opacity: 0.45;
+            margin: 16px 0;
+        }
 
-label {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+        /* Form elements */
+        label {
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 5px;
+        }
 
-input[type="checkbox"] {
-    accent-color: var(--accent);
-    width: 18px;
-    height: 18px;
-}
+        select,
+        input[type="range"],
+        textarea {
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
 
-select, input[type="range"] {
-    background: var(--panel2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 10px 12px;
-    border-radius: 12px;
-    font-size: 15px;
-    transition: all 0.2s ease;
-    width: 100%;
-}
+        select {
+            padding: 9px 11px;
+        }
 
-select:focus, input[type="range"]:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.15);
-}
+        textarea {
+            padding: 10px 12px;
+            resize: vertical;
+            min-height: 64px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
 
-.color-preview {
-    width: 32px;
-    height: 32px;
-    border-radius: 10px;
-    border: 2px solid var(--border);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    margin-left: auto;
-    flex-shrink: 0;
-    transition: background 0.3s;
-}
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.12);
+        }
 
-.slider-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+        input[type="checkbox"] {
+            accent-color: var(--accent);
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
 
-.slider-value {
-    font-family: monospace;
-    font-size: 15px;
-    min-width: 48px;
-    text-align: right;
-    color: var(--accent);
-    font-weight: 600;
-}
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
 
-button {
-    padding: 14px 20px;
-    border: none;
-    border-radius: 14px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
+        .row:last-child {
+            margin-bottom: 0;
+        }
 
-button:hover {
-    transform: translateY(-2px);
-}
+        .row select {
+            flex: 1;
+        }
 
-.generate {
-    background: linear-gradient(135deg, var(--accent), #00b8c2);
-    color: #000;
-    font-size: 17px;
-}
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.random {
-    background: #ff2e94;
-    color: white;
-}
+        .slider-row input[type="range"] {
+            flex: 1;
+        }
 
-.download {
-    background: #22c55e;
-    color: white;
-}
+        .slider-val {
+            font-family: monospace;
+            font-size: 13px;
+            min-width: 54px;
+            text-align: right;
+            color: var(--accent);
+            font-weight: 600;
+        }
 
-.canvas-panel {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--panel2);
-    padding: 20px;
-    border-radius: 20px;
-}
+        /* Color preview */
+        .color-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            flex-shrink: 0;
+            transition: background 0.25s;
+        }
 
-canvas {
-    width: 100%;
-    max-width: 620px;
-    height: auto;
-    aspect-ratio: 1 / 1;
-    border-radius: 16px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6),
-                0 0 0 1px rgba(255,255,255,0.05) inset;
-    background: #000;
-    image-rendering: crisp-edges;
-}
+        /* Thread count display */
+        .tc-box {
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            word-break: break-all;
+            line-height: 1.6;
+            min-height: 38px;
+        }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+        .tc-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 5px;
+            line-height: 1.5;
+        }
 
-.panel {
-    animation: fadeIn 0.6s ease backwards;
-}
-</style>
+        /* Palette row */
+        .palette-row {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: default;
+            transition: transform 0.15s;
+        }
+
+        .swatch:hover {
+            transform: scale(1.3);
+        }
+
+        /* Error */
+        .tc-error {
+            font-size: 11px;
+            color: var(--danger);
+            margin-top: 4px;
+            display: none;
+        }
+
+        .tc-error.show {
+            display: block;
+        }
+
+        /* Buttons */
+        button {
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 12px 16px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-gen {
+            background: linear-gradient(135deg, var(--accent), #00b8c2);
+            color: #000;
+        }
+
+        .btn-rand {
+            background: #ff2e94;
+            color: #fff;
+        }
+
+        .btn-dl {
+            background: var(--success);
+            color: #fff;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .btn-apply {
+            background: var(--accent);
+            color: #000;
+            font-size: 13px;
+            padding: 9px 14px;
+            border-radius: 9px;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        /* Canvas panel */
+        .canvas-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            background: var(--panel2);
+            padding: 18px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .canvas-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+        }
+
+        canvas {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1/1;
+            border-radius: 14px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+            background: #0a0c12;
+            image-rendering: pixelated;
+            display: block;
+        }
+
+        .loader-overlay {
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            background: rgba(10, 12, 18, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s;
+            z-index: 10;
+        }
+
+        .loader-overlay.on {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0, 245, 255, 0.12);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .loader-text {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* History */
+        .hist-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            align-self: flex-start;
+            letter-spacing: 0.3px;
+        }
+
+        .hist-strip {
+            display: flex;
+            gap: 7px;
+            width: 100%;
+            max-width: 640px;
+            min-height: 52px;
+            align-items: center;
+            overflow-x: auto;
+            padding-bottom: 2px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .hist-strip::-webkit-scrollbar {
+            height: 3px;
+        }
+
+        .hist-strip::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .hist-thumb {
+            width: 48px;
+            height: 48px;
+            border-radius: 9px;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            flex-shrink: 0;
+            overflow: hidden;
+            background: #000;
+            transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+        }
+
+        .hist-thumb img {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .hist-thumb:hover {
+            border-color: var(--accent);
+            transform: scale(1.12);
+            box-shadow: 0 4px 14px rgba(0, 245, 255, 0.2);
+        }
+
+        .hist-thumb.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(0, 245, 255, 0.28);
+        }
+
+        .hist-empty {
+            font-size: 12px;
+            color: var(--border);
+            font-style: italic;
+        }
+
+        /* Clan name badge */
+        .clan-badge {
+            font-size: 12px;
+            color: var(--text-muted);
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 5px 10px;
+            align-self: flex-start;
+        }
+
+        .clan-name {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .panel {
+            animation: fadeIn 0.5s ease backwards;
+        }
+    </style>
 </head>
 
 <body>
 
-<header>🎨 Генератор тартана</header>
-<p class="subtitle">Создавай уникальные шотландские узоры за секунды</p>
+    <header>🏴󠁧󠁢󠁳󠁣󠁴󠁿 Генератор тартана</header>
+    <p class="subtitle">Подлинное саржевое переплетение · Палитра STA · Нотация thread count</p>
 
-<div class="container">
+    <div class="container">
 
-    <div class="panel">
-        <div class="controls">
 
-            <div class="control-group">
-                <label>Доминирующий цвет</label>
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <select id="dominant">
-                        <option value="any">Случайный</option>
-                        <option value="red">Красный</option>
-                        <option value="green">Зелёный</option>
-                        <option value="blue">Синий</option>
-                        <option value="purple">Фиолетовый</option>
-                        <option value="yellow">Жёлтый</option>
-                    </select>
-                    <div id="colorPreview" class="color-preview"></div>
-                </div>
+        <div class="panel">
+
+            <div class="sec">Доминирующий цвет</div>
+            <div class="row">
+                <select id="dominant">
+                    <option value="any">Случайный</option>
+                    <option value="B">B — Синий</option>
+                    <option value="G">G — Зелёный</option>
+                    <option value="K">K — Чёрный</option>
+                    <option value="R">R — Красный</option>
+                    <option value="T">T — Коричневый</option>
+                    <option value="P">P — Фиолетовый</option>
+                    <option value="Y">Y — Жёлтый / Золотой</option>
+                    <option value="N">N — Серый</option>
+                    <option value="W">W — Белый / Кремовый</option>
+                </select>
+                <div class="color-dot" id="colorDot"></div>
             </div>
 
-            <div class="control-group">
-                <label>Тон</label>
+            <div class="sec">Тон</div>
+            <div class="row">
                 <select id="tone">
                     <option value="any">Любой</option>
-                    <option value="dark">Тёмный</option>
-                    <option value="pastel">Пастельный</option>
+                    <option value="dark">Тёмный (D…)</option>
+                    <option value="light">Светлый (L…)</option>
+                    <option value="historical">Исторический (приглушённый)</option>
+                    <option value="modern">Современный (насыщенный)</option>
                 </select>
             </div>
 
-            <div class="control-group">
-                <label><input type="checkbox" id="historical" checked> Исторический стиль (приглушённые тона)</label>
+            <div class="sec">Параметры ткани</div>
+            <label style="margin-bottom:8px"><input type="checkbox" id="texture" checked> Текстура саржи (twill
+                2/2)</label>
+            <label><input type="checkbox" id="warpweft"> Разные цвета основы и утка (rare)</label>
+
+            <div class="divider"></div>
+            <div class="sec">Thread count (нотация STA)</div>
+
+            <textarea id="tcInput" placeholder="Пример: G/24 B4 K24 B4 G/24&#10;Или: R32 K4 G32 K4 W4 K4"></textarea>
+            <div class="tc-error" id="tcError">Ошибка разбора. Пример: G/24 B4 K24</div>
+            <div style="display:flex;gap:8px;margin-top:7px;align-items:center;">
+                <button class="btn-apply" id="applyTC">Применить →</button>
+                <span style="font-size:11px;color:var(--text-muted)">или генерируй ниже</span>
+            </div>
+            <div class="tc-hint">
+                Коды: B=синий G=зелёный K=чёрный R=красный T=коричневый P=фиолетовый Y=жёлтый N=серый W=белый
+                O=оранжевый<br>
+                Префиксы D=тёмный L=светлый. Якоря пишутся через слэш: G/24
             </div>
 
-            <div class="control-group">
-                <label><input type="checkbox" id="texture" checked> Текстура ткани (эффект переплетения)</label>
+            <div class="divider"></div>
+            <div class="sec">Текущий паттерн</div>
+            <div class="tc-box" id="tcDisplay">—</div>
+            <div class="palette-row" id="paletteRow"></div>
+            <div class="clan-badge" id="clanBadge" style="margin-top:8px;">Клан: <span class="clan-name"
+                    id="clanName">—</span></div>
+
+            <div class="divider"></div>
+            <div class="sec">Экспорт</div>
+            <label style="margin-bottom:6px;">Разрешение файла</label>
+            <div class="slider-row">
+                <input type="range" id="size" min="256" max="2048" step="64" value="768">
+                <span class="slider-val" id="sizeLabel">768 px</span>
             </div>
 
-            <div class="control-group">
-                <label for="size">Размер холста</label>
-                <div class="slider-container">
-                    <input type="range" id="size" min="256" max="2048" step="64" value="512">
-                    <span class="slider-value" id="sizeLabel">512</span>
-                </div>
+            <div class="btn-grid">
+                <button class="btn-gen" id="generateBtn">✨ Создать</button>
+                <button class="btn-rand" id="randomBtn">🎲 Случайный</button>
             </div>
-
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
-                <button class="generate" id="generateBtn">✨ Сгенерировать</button>
-                <button class="random" id="randomBtn">🎲 Случайный</button>
-            </div>
-
-            <button class="download" id="downloadBtn" style="width:100%; margin-top:8px;">💾 Скачать PNG</button>
+            <button class="btn-dl" id="downloadBtn">💾 Скачать PNG</button>
 
         </div>
+
+
+        <div class="panel canvas-panel">
+            <div class="canvas-wrap">
+                <canvas id="canvas"></canvas>
+                <div class="loader-overlay" id="loader">
+                    <div class="spinner"></div>
+                    <div class="loader-text">Ткём узор…</div>
+                </div>
+            </div>
+            <div class="hist-label">История</div>
+            <div class="hist-strip" id="histStrip">
+                <span class="hist-empty">Паттерны появятся здесь</span>
+            </div>
+        </div>
+
     </div>
 
-    <div class="panel canvas-panel">
-        <canvas id="canvas"></canvas>
-    </div>
+    <script>
+        // ════════════════════════════════════════════════════════════
+        // 1. ПАЛИТРА — эталонные RGB из базы STA / Thread Count Index
+        //    Несколько вариантов на каждый код для живости
+        // ════════════════════════════════════════════════════════════
+        const PALETTE = {
+            B: [[28, 60, 118], [22, 74, 142], [40, 88, 154], [18, 50, 102], [50, 100, 165]],   // Blue
+            LB: [[88, 138, 198], [110, 158, 215], [75, 125, 192], [100, 150, 208]],           // Light Blue
+            DB: [[10, 30, 78], [8, 24, 64], [14, 38, 90], [6, 20, 58]],                       // Dark Blue
+            G: [[24, 82, 38], [32, 96, 46], [20, 70, 34], [44, 106, 52], [28, 88, 42]],         // Green
+            LG: [[72, 142, 72], [88, 158, 80], [64, 130, 68], [96, 162, 88]],                 // Light Green
+            DG: [[10, 46, 18], [8, 38, 14], [14, 54, 22], [6, 32, 12]],                       // Dark Green
+            K: [[18, 16, 16], [24, 22, 20], [14, 12, 12], [28, 26, 24]],                     // Black
+            N: [[118, 116, 110], [100, 98, 94], [136, 134, 128], [88, 86, 82]],              // Grey
+            LN: [[180, 178, 172], [195, 193, 187], [165, 163, 158]],                       // Light Grey
+            R: [[162, 22, 28], [178, 28, 32], [148, 18, 24], [185, 35, 35], [155, 20, 26]],     // Red
+            DR: [[105, 14, 18], [88, 10, 14], [118, 18, 22], [75, 10, 12]],                   // Dark Red
+            LR: [[210, 80, 80], [198, 65, 70], [220, 90, 88]],                             // Light Red
+            T: [[124, 78, 32], [112, 68, 26], [138, 88, 38], [100, 62, 22], [128, 82, 35]],     // Tan/Brown
+            DT: [[68, 42, 16], [56, 34, 12], [76, 48, 20], [48, 28, 10]],                     // Dark Brown
+            LT: [[168, 124, 72], [182, 138, 84], [156, 112, 62]],                          // Light Tan
+            P: [[82, 36, 104], [70, 28, 90], [96, 46, 118], [60, 24, 80]],                   // Purple
+            LP: [[138, 90, 168], [150, 104, 178], [124, 78, 156]],                         // Light Purple
+            Y: [[188, 154, 32], [175, 140, 24], [202, 168, 42], [165, 132, 20], [196, 160, 38]],// Yellow/Gold
+            LY: [[220, 200, 80], [232, 214, 96], [210, 192, 68]],                          // Light Yellow
+            W: [[232, 230, 220], [240, 238, 228], [224, 222, 212], [245, 243, 235]],          // White/Cream
+            O: [[188, 84, 16], [176, 74, 12], [202, 96, 22], [168, 68, 10]],                 // Orange
+            LO: [[220, 140, 60], [210, 128, 50], [228, 150, 70]],                          // Light Orange
+        };
 
-</div>
+        // Какие коды входят в каждый «доминирующий» по тону
+        const DOM_GROUPS = {
+            B: { any: ['B', 'LB', 'DB'], dark: ['DB', 'B'], light: ['LB', 'B'], historical: ['DB', 'B'], modern: ['B', 'LB'] },
+            G: { any: ['G', 'LG', 'DG'], dark: ['DG', 'G'], light: ['LG', 'G'], historical: ['DG', 'G'], modern: ['G', 'LG'] },
+            K: { any: ['K', 'N'], dark: ['K'], light: ['N', 'LN'], historical: ['K', 'N'], modern: ['K', 'N'] },
+            R: { any: ['R', 'DR', 'LR'], dark: ['DR', 'R'], light: ['LR', 'R'], historical: ['DR', 'R'], modern: ['R', 'LR'] },
+            T: { any: ['T', 'DT', 'LT'], dark: ['DT', 'T'], light: ['LT', 'T'], historical: ['T', 'DT'], modern: ['T', 'LT'] },
+            P: { any: ['P', 'LP'], dark: ['P'], light: ['LP', 'P'], historical: ['P'], modern: ['P', 'LP'] },
+            Y: { any: ['Y', 'LY'], dark: ['Y'], light: ['LY', 'Y'], historical: ['Y'], modern: ['Y', 'LY'] },
+            N: { any: ['N', 'LN', 'K'], dark: ['K', 'N'], light: ['LN', 'N'], historical: ['N', 'K'], modern: ['N', 'LN'] },
+            W: { any: ['W', 'LN'], dark: ['N'], light: ['W'], historical: ['W', 'LN'], modern: ['W'] },
+        };
 
-<script>
-const DOMINANT_HUES = {
-    red: [0.0, 0.05],
-    green: [0.25, 0.4],
-    blue: [0.55, 0.7],
-    purple: [0.75, 0.85],
-    yellow: [0.12, 0.18]
-};
+        // Исторически достоверные акцентные пары для каждого доминирующего цвета
+        // Взяты из реальных известных тартанов
+        const ACCENT_SETS = {
+            B: [['K', 'G'], ['K', 'W'], ['K', 'Y'], ['DG', 'K'], ['G', 'R'], ['K', 'G', 'R'], ['DG', 'R', 'K']],
+            G: [['K', 'B'], ['K', 'W'], ['K', 'R'], ['B', 'R'], ['K', 'Y'], ['DB', 'K', 'R'], ['K', 'B', 'R']],
+            K: [['G', 'B'], ['R', 'G'], ['B', 'Y'], ['G', 'R', 'B'], ['DG', 'DB']],
+            R: [['K', 'G'], ['K', 'DB'], ['K', 'W'], ['DG', 'K'], ['K', 'G', 'B'], ['DR', 'K', 'G']],
+            T: [['K', 'G'], ['K', 'DB'], ['DG', 'K'], ['K', 'R'], ['K', 'B', 'G']],
+            P: [['K', 'G'], ['K', 'W'], ['G', 'W'], ['K', 'B']],
+            Y: [['K', 'R'], ['K', 'B'], ['K', 'G'], ['R', 'G', 'K']],
+            N: [['K', 'B'], ['K', 'G'], ['DB', 'R'], ['B', 'R', 'K']],
+            W: [['K', 'G'], ['K', 'B'], ['K', 'R'], ['B', 'G']],
+        };
 
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-const dominantEl = document.getElementById("dominant");
-const toneEl = document.getElementById("tone");
-const historicalEl = document.getElementById("historical");
-const textureEl = document.getElementById("texture");
-const sizeEl = document.getElementById("size");
-const sizeLabel = document.getElementById("sizeLabel");
+        // Несколько настоящих известных кланов для подписи (случайная)
+        const CLANS = [
+            { name: 'Royal Stewart', tc: 'R/56 K4 R4 K4 G32 K4 W2 K4 G32 K4 R4 K4 R/56' },
+            { name: 'Black Watch', tc: 'B/4 B16 K4 B16 G32 K4 G32 B16 K4 B16 B/4' },
+            { name: 'Hunting Stewart', tc: 'G/16 B4 G16 K4 G16 R4 G16 B4 G/16' },
+            { name: 'Dress Gordon', tc: 'G/8 B4 G8 K4 G8 B4 G/8' },
+            { name: 'MacLeod', tc: 'Y/24 K4 R4 K4 Y/24' },
+            { name: 'Campbell', tc: 'DB/4 DB16 K4 DB16 G32 K4 G32 DB16 K4 DB16 DB/4' },
+            { name: 'Fraser', tc: 'R/4 B4 R4 K4 R32 K4 B4 K4 R/4' },
+            { name: 'MacTavish', tc: 'DG/8 K4 DG8 B4 DG8 K4 DG/8' },
+            { name: 'Sinclair', tc: 'R/4 Y4 R4 K4 R32 K4 Y4 K4 R/4' },
+            { name: 'Hamilton', tc: 'R/4 B4 R4 K4 G32 K4 B4 K4 R/4' },
+        ];
 
-// Текущее состояние паттерна
-let currentSett = null;
-let currentSize = 512;
+        // ════════════════════════════════════════════════════════════
+        // 2. УТИЛИТЫ
+        // ════════════════════════════════════════════════════════════
+        function rand(a, b) { return Math.random() * (b - a) + a; }
+        function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function clamp(v) { return Math.max(0, Math.min(255, v)); }
 
-function rand(a, b) { return Math.random() * (b - a) + a; }
-
-function hsvToRgb(h, s, v) {
-    let r, g, b, i = Math.floor(h * 6), f = h * 6 - i;
-    let p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
-    switch (i % 6) {
-        case 0: r = v; g = t; b = p; break;
-        case 1: r = q; g = v; b = p; break;
-        case 2: r = p; g = v; b = t; break;
-        case 3: r = p; g = q; b = v; break;
-        case 4: r = t; g = p; b = v; break;
-        case 5: r = v; g = p; b = q; break;
-    }
-    return [r * 255, g * 255, b * 255];
-}
-
-function generateBase() {
-    let dominant = dominantEl.value;
-    let tone = toneEl.value;
-    let historical = historicalEl.checked;
-
-    let h = dominant === "any" ? Math.random() : rand(...DOMINANT_HUES[dominant]);
-    let s, v;
-    if (tone === "dark")        { s = rand(0.5, 0.9); v = rand(0.3, 0.6); }
-    else if (tone === "pastel") { s = rand(0.2, 0.4); v = rand(0.8, 1);   }
-    else                        { s = rand(0.4, 0.9); v = rand(0.4, 0.9); }
-
-    if (historical) { s *= 0.72; v *= 0.82; }
-
-    const rgb = hsvToRgb(h, s, v);
-    document.getElementById("colorPreview").style.background =
-        `rgb(${rgb[0]|0},${rgb[1]|0},${rgb[2]|0})`;
-    return rgb;
-}
-
-function accent(historical) {
-    if (historical) {
-        return [[28,28,32],[235,235,240],[110,110,115]][Math.floor(Math.random()*3)];
-    }
-    return Math.random() > 0.5 ? [0,0,0] : [255,255,255];
-}
-
-function buildSett(base, historical) {
-    return [
-        [base,            Math.floor(rand(60, 140))],
-        [accent(historical), Math.floor(rand(8, 30))],
-        [base,            Math.floor(rand(20, 60))],
-        [accent(historical), Math.floor(rand(4, 12))],
-        [base,            Math.floor(rand(20, 60))],
-        [accent(historical), Math.floor(rand(8, 24))],
-        [base,            Math.floor(rand(40, 100))]
-    ];
-}
-
-// Рисует паттерн из готового sett — не генерирует новый
-function drawPattern(size, sett, useTexture) {
-    canvas.width = size;
-    canvas.height = size;
-
-    let pattern = [];
-    sett.forEach(([c, w]) => {
-        for (let i = 0; i < w; i++) pattern.push(c);
-    });
-    pattern = pattern.concat(pattern.slice().reverse());
-    const plen = pattern.length;
-
-    const img = ctx.createImageData(size, size);
-    const data = img.data;
-
-    for (let x = 0; x < size; x++) {
-        for (let y = 0; y < size; y++) {
-            const cx = pattern[x % plen];
-            const cy = pattern[y % plen];
-
-            let r, g, b;
-            if (cx[0] === cy[0] && cx[1] === cy[1] && cx[2] === cy[2]) {
-                [r, g, b] = cx;
-            } else {
-                r = Math.min(255, cx[0] * 0.62 + cy[0] * 0.62);
-                g = Math.min(255, cx[1] * 0.62 + cy[1] * 0.62);
-                b = Math.min(255, cx[2] * 0.62 + cy[2] * 0.62);
-            }
-
-            if (useTexture) {
-                const weave = ((x % 4 < 2) ^ (y % 4 < 2)) ? 12 : -12;
-                const noise = rand(-9, 9);
-                r = Math.max(0, Math.min(255, r + weave + noise));
-                g = Math.max(0, Math.min(255, g + weave + noise));
-                b = Math.max(0, Math.min(255, b + weave + noise));
-            }
-
-            const i = (y * size + x) * 4;
-            data[i] = r; data[i+1] = g; data[i+2] = b; data[i+3] = 255;
+        function getColor(code, jitter = 8) {
+            const v = PALETTE[code];
+            if (!v) return [128, 128, 128];
+            const c = pick(v);
+            return c.map(ch => clamp(ch + Math.round(rand(-jitter, jitter))));
         }
-    }
 
-    ctx.putImageData(img, 0, 0);
-}
+        // Приглушение для исторического тона
+        function historicize([r, g, b]) {
+            const avg = (r + g + b) / 3;
+            return [
+                clamp(Math.round(r * 0.68 + avg * 0.32)),
+                clamp(Math.round(g * 0.68 + avg * 0.32)),
+                clamp(Math.round(b * 0.68 + avg * 0.32)),
+            ];
+        }
 
-// Полная генерация — новый паттерн
-function generate() {
-    currentSize = parseInt(sizeEl.value);
-    sizeLabel.textContent = currentSize;
-    const base = generateBase();
-    currentSett = buildSett(base, historicalEl.checked);
-    drawPattern(currentSize, currentSett, textureEl.checked);
-}
+        // ════════════════════════════════════════════════════════════
+        // 3. РАЗБОР THREAD COUNT (нотация STA)
+        //    Форматы: G/24 B4 K24 — символ + число, якоря через /
+        // ════════════════════════════════════════════════════════════
+        function parseThreadCount(str) {
+            // Убираем многоточия (асимметричный тартан)
+            str = str.replace(/…|\.\.\./g, '').trim();
 
-// Только текстура — паттерн тот же
-textureEl.addEventListener("change", () => {
-    if (!currentSett) return;
-    drawPattern(currentSize, currentSett, textureEl.checked);
-});
+            // Токенизация: LD16, G/24, K4 и т.д.
+            const tokens = [];
+            const re = /([A-Z]{1,2})\/(\d+)|([A-Z]{1,2})(\d+)/gi;
+            let m;
+            while ((m = re.exec(str)) !== null) {
+                if (m[1]) { // pivot
+                    tokens.push({ code: m[1].toUpperCase(), count: parseInt(m[2]), pivot: true });
+                } else {
+                    tokens.push({ code: m[3].toUpperCase(), count: parseInt(m[4]), pivot: false });
+                }
+            }
+            if (tokens.length < 2) return null;
 
-// Только размер — паттерн тот же
-sizeEl.addEventListener("input", () => {
-    currentSize = parseInt(sizeEl.value);
-    sizeLabel.textContent = currentSize;
-    if (!currentSett) return;
-    drawPattern(currentSize, currentSett, textureEl.checked);
-});
+            // Проверяем что коды известны
+            for (const t of tokens) {
+                if (!PALETTE[t.code]) return null;
+            }
+            return tokens;
+        }
 
-// Цвет и тон — новый паттерн
-dominantEl.addEventListener("change", generate);
-toneEl.addEventListener("change", generate);
-historicalEl.addEventListener("change", generate);
+        // Строим развёрнутый паттерн из токенов (симметричный тартан)
+        function buildPatternFromTokens(tokens, historical) {
+            // Разворачиваем: каждый токен → массив цветов
+            const expand = (toks) => {
+                const arr = [];
+                for (const t of toks) {
+                    const col = historical ? historicize(getColor(t.code)) : getColor(t.code);
+                    const w = historical ? t.count : t.count;
+                    for (let i = 0; i < w; i++) arr.push(col);
+                }
+                return arr;
+            };
 
-document.getElementById("generateBtn").addEventListener("click", generate);
+            // Проверяем якоря
+            const hasPivots = tokens[0].pivot || tokens[tokens.length - 1].pivot;
 
-document.getElementById("randomBtn").addEventListener("click", () => {
-    const selects = document.querySelectorAll("select");
-    selects.forEach(s => s.selectedIndex = Math.floor(Math.random() * s.options.length));
-    historicalEl.checked = Math.random() > 0.4;
-    textureEl.checked = Math.random() > 0.3;
-    generate();
-});
+            if (hasPivots) {
+                // Симметричный тартан: половина якоря + середина + половина якоря + зеркало
+                const half = [];
+                for (let i = 0; i < tokens.length; i++) {
+                    const t = tokens[i];
+                    const col = historical ? historicize(getColor(t.code)) : getColor(t.code);
+                    let w = t.count;
+                    if (t.pivot) w = Math.max(1, Math.round(w / 2));
+                    for (let j = 0; j < w; j++) half.push(col);
+                }
+                // Зеркало без повтора крайних
+                const mirror = half.slice(0, -1).reverse().slice(0, -1);
+                return [...half, ...mirror];
+            } else {
+                // Асимметричный — просто повторяем
+                return expand(tokens);
+            }
+        }
 
-document.getElementById("downloadBtn").addEventListener("click", () => {
-    const link = document.createElement("a");
-    link.download = `tartan_${Date.now()}.png`;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-});
+        // Thread count → строка для отображения
+        function settToTCString(sett) {
+            // sett = [{code, count, pivot}]
+            return sett.map(t => t.pivot ? `${t.code}/${t.count}` : `${t.code}${t.count}`).join(' ');
+        }
 
-generate();
-</script>
+        // ════════════════════════════════════════════════════════════
+        // 4. ГЕНЕРАЦИЯ СЛУЧАЙНОГО СЕТТА
+        // ════════════════════════════════════════════════════════════
+        function generateSett(domKey, toneKey) {
+            const historical = (toneKey === 'historical');
 
+            // Выбираем доминирующий код
+            const groups = DOM_GROUPS[domKey] || DOM_GROUPS['G'];
+            const domCodes = groups[toneKey] || groups['any'];
+            const domCode = pick(domCodes);
+
+            // Акцентные коды
+            const accSet = pick(ACCENT_SETS[domKey] || ACCENT_SETS['G']);
+
+            // Строим токены сетта
+            // Структура реального тартана: пивот - акцент1 - дом - акцент2 - дом - акцент1 - пивот
+            // Иногда добавляем третий акцент в середину
+
+            const domW1 = Math.floor(rand(40, 100)); // основная широкая полоса
+            const domW2 = Math.floor(rand(18, 44));  // средняя полоса
+            const acc1W = Math.floor(rand(4, 16));
+            const acc2W = Math.floor(rand(2, 8));
+            const midW = accSet.length > 2 ? Math.floor(rand(6, 14)) : 0;
+
+            const tokens = [];
+            // Первый пивот
+            tokens.push({ code: domCode, count: domW1, pivot: true });
+            tokens.push({ code: accSet[0], count: acc1W, pivot: false });
+            if (accSet.length > 2 && midW > 0) {
+                tokens.push({ code: domCode, count: domW2, pivot: false });
+                tokens.push({ code: accSet[2], count: midW, pivot: false });
+            }
+            tokens.push({ code: domCode, count: domW2, pivot: false });
+            tokens.push({ code: accSet[1 % accSet.length], count: acc2W, pivot: false });
+            // Последний пивот
+            tokens.push({ code: domCode, count: domW1, pivot: true });
+
+            return { tokens, historical };
+        }
+
+        // ════════════════════════════════════════════════════════════
+        // 5. ОТРИСОВКА — настоящее саржевое переплетение twill 2/2
+        // ════════════════════════════════════════════════════════════
+        function drawTartan(canvas, warpPattern, weftPattern, useTexture) {
+            const size = canvas.width;
+            const ctx = canvas.getContext('2d');
+            const warpLen = warpPattern.length;
+            const weftLen = weftPattern.length;
+            const img = ctx.createImageData(size, size);
+            const data = img.data;
+
+            // Масштаб: паттерн растягивается на весь холст
+            // Период паттерна в пикселях (подбираем кратно)
+            const scale = Math.max(1, Math.floor(size / Math.max(warpLen, weftLen) / 2) * 2) || 1;
+
+            for (let py = 0; py < size; py++) {
+                for (let px = 0; px < size; px++) {
+                    // Индекс в паттерне с учётом масштаба
+                    const xi = Math.floor(px / scale) % warpLen;
+                    const yi = Math.floor(py / scale) % weftLen;
+
+                    // Twill 2/2: в точке (xi,yi) — основа сверху если ((xi+yi)%4 < 2)
+                    // Это создаёт диагональный рубчик, как в настоящей шерсти
+                    const warpOnTop = ((xi + yi) % 4) < 2;
+
+                    const warpColor = warpPattern[xi];
+                    const weftColor = weftPattern[yi];
+
+                    // Нить которая сверху видна полностью, нижняя — частично просвечивает
+                    let r, g, b;
+                    if (warpOnTop) {
+                        r = clamp(warpColor[0] * 0.88 + weftColor[0] * 0.12);
+                        g = clamp(warpColor[1] * 0.88 + weftColor[1] * 0.12);
+                        b = clamp(warpColor[2] * 0.88 + weftColor[2] * 0.12);
+                    } else {
+                        r = clamp(weftColor[0] * 0.88 + warpColor[0] * 0.12);
+                        g = clamp(weftColor[1] * 0.88 + warpColor[1] * 0.12);
+                        b = clamp(weftColor[2] * 0.88 + warpColor[2] * 0.12);
+                    }
+
+                    if (useTexture) {
+                        // Тиснение нити: нить сверху чуть светлее по центру, темнее по краям
+                        const threadX = (px / scale) % 1; // 0..1 внутри нити
+                        const threadY = (py / scale) % 1;
+                        const bump = warpOnTop
+                            ? Math.sin(threadX * Math.PI) * 14 - 4
+                            : Math.sin(threadY * Math.PI) * 14 - 4;
+                        // Тонкий шум волокна
+                        const fiber = (Math.sin(px * 0.7 + py * 0.3) * 3 + Math.sin(px * 1.3 - py * 0.8) * 2);
+                        r = clamp(r + bump + fiber);
+                        g = clamp(g + bump + fiber);
+                        b = clamp(b + bump + fiber);
+                    }
+
+                    const i = (py * size + px) * 4;
+                    data[i] = r | 0; data[i + 1] = g | 0; data[i + 2] = b | 0; data[i + 3] = 255;
+                }
+            }
+            ctx.putImageData(img, 0, 0);
+        }
+
+        // ════════════════════════════════════════════════════════════
+        // 6. UI ЛОГИКА
+        // ════════════════════════════════════════════════════════════
+        const canvasEl = document.getElementById('canvas');
+        const loaderEl = document.getElementById('loader');
+        const histStrip = document.getElementById('histStrip');
+        const dominantEl = document.getElementById('dominant');
+        const toneEl = document.getElementById('tone');
+        const textureEl = document.getElementById('texture');
+        const warpweftEl = document.getElementById('warpweft');
+        const sizeEl = document.getElementById('size');
+        const sizeLabel = document.getElementById('sizeLabel');
+        const tcInput = document.getElementById('tcInput');
+        const tcError = document.getElementById('tcError');
+        const tcDisplay = document.getElementById('tcDisplay');
+        const paletteRow = document.getElementById('paletteRow');
+        const colorDot = document.getElementById('colorDot');
+        const clanName = document.getElementById('clanName');
+
+        let currentTokens = null;
+        let currentHistorical = false;
+        let currentSize = 768;
+        const HIST_MAX = 10;
+        const history = [];
+
+        function setLoading(on) {
+            loaderEl.classList.toggle('on', on);
+            document.getElementById('generateBtn').disabled = on;
+            document.getElementById('randomBtn').disabled = on;
+        }
+
+        function updateUI(tokens, historical) {
+            // Thread count строка
+            tcDisplay.textContent = settToTCString(tokens);
+
+            // Палитра свотчей
+            paletteRow.innerHTML = '';
+            const seen = new Set();
+            tokens.forEach(t => {
+                if (seen.has(t.code)) return;
+                seen.add(t.code);
+                const col = pick(PALETTE[t.code] || [[128, 128, 128]]);
+                const sw = document.createElement('div');
+                sw.className = 'swatch';
+                sw.style.background = `rgb(${col[0]},${col[1]},${col[2]})`;
+                sw.title = `${t.code} — rgb(${col[0]},${col[1]},${col[2]})`;
+                paletteRow.appendChild(sw);
+            });
+
+            // Цветовой дот — первый доминирующий цвет
+            const firstCode = tokens[0].code;
+            const firstCol = pick(PALETTE[firstCode] || [[128, 128, 128]]);
+            colorDot.style.background = `rgb(${firstCol[0]},${firstCol[1]},${firstCol[2]})`;
+
+            // Имя клана — случайное при каждой генерации (для атмосферы)
+            const clan = pick(CLANS);
+            clanName.textContent = clan.name;
+        }
+
+        function doRender() {
+            if (!currentTokens) return;
+            canvasEl.width = canvasEl.height = currentSize;
+            const historical = currentHistorical;
+            const pattern = buildPatternFromTokens(currentTokens, historical);
+
+            // Основа и уток — одинаковые (стандарт) или разные (rare mode)
+            let weftPattern = pattern;
+            if (warpweftEl.checked) {
+                // Смещаем уток на случайную величину
+                const offset = Math.floor(rand(pattern.length * 0.2, pattern.length * 0.5));
+                weftPattern = [...pattern.slice(offset), ...pattern.slice(0, offset)];
+            }
+
+            drawTartan(canvasEl, pattern, weftPattern, textureEl.checked);
+        }
+
+        function generate() {
+            currentSize = parseInt(sizeEl.value);
+            sizeLabel.textContent = currentSize + ' px';
+            const domKey = dominantEl.value === 'any'
+                ? pick(Object.keys(DOM_GROUPS))
+                : dominantEl.value;
+            const toneKey = toneEl.value;
+            currentHistorical = (toneKey === 'historical');
+
+            const { tokens, historical } = generateSett(domKey, toneKey);
+            currentTokens = tokens;
+            currentHistorical = historical;
+            tcInput.value = settToTCString(tokens);
+            tcError.classList.remove('show');
+
+            setLoading(true);
+            setTimeout(() => {
+                doRender();
+                updateUI(currentTokens, currentHistorical);
+                addToHistory(currentTokens, currentHistorical);
+                setLoading(false);
+            }, 30);
+        }
+
+        function applyThreadCount() {
+            const str = tcInput.value.trim();
+            if (!str) { return; }
+            const tokens = parseThreadCount(str);
+            if (!tokens) {
+                tcError.classList.add('show');
+                return;
+            }
+            tcError.classList.remove('show');
+            currentTokens = tokens;
+            currentHistorical = (toneEl.value === 'historical');
+            setLoading(true);
+            setTimeout(() => {
+                doRender();
+                updateUI(currentTokens, currentHistorical);
+                addToHistory(currentTokens, currentHistorical);
+                setLoading(false);
+            }, 30);
+        }
+
+        // Текстура и warpweft — перерисовка без генерации
+        textureEl.addEventListener('change', () => { if (currentTokens) { doRender(); } });
+        warpweftEl.addEventListener('change', () => { if (currentTokens) { doRender(); } });
+
+        // Размер — перерисовка
+        sizeEl.addEventListener('input', () => {
+            currentSize = parseInt(sizeEl.value);
+            sizeLabel.textContent = currentSize + ' px';
+            if (!currentTokens) return;
+            setLoading(true);
+            setTimeout(() => { doRender(); setLoading(false); }, 30);
+        });
+
+        // Цвет и тон — новая генерация
+        dominantEl.addEventListener('change', generate);
+        toneEl.addEventListener('change', generate);
+
+        document.getElementById('generateBtn').addEventListener('click', generate);
+        document.getElementById('applyTC').addEventListener('click', applyThreadCount);
+        tcInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); applyThreadCount(); } });
+
+        document.getElementById('randomBtn').addEventListener('click', () => {
+            dominantEl.selectedIndex = Math.floor(Math.random() * dominantEl.options.length);
+            toneEl.selectedIndex = Math.floor(Math.random() * toneEl.options.length);
+            textureEl.checked = Math.random() > 0.25;
+            warpweftEl.checked = Math.random() > 0.85;
+            generate();
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const a = document.createElement('a');
+            a.download = `tartan_${Date.now()}.png`;
+            a.href = canvasEl.toDataURL('image/png');
+            a.click();
+        });
+
+        // История
+        function makeThumbnail(tokens, historical) {
+            const S = 120;
+            const mini = document.createElement('canvas');
+            mini.width = mini.height = S;
+            const pattern = buildPatternFromTokens(tokens, historical);
+            drawTartan(mini, pattern, pattern, false);
+            return mini.toDataURL();
+        }
+
+        function addToHistory(tokens, historical) {
+            const thumb = makeThumbnail(tokens, historical);
+            history.unshift({ tokens: [...tokens], historical, thumb, size: currentSize });
+            if (history.length > HIST_MAX) history.pop();
+            renderHistory(0);
+        }
+
+        function renderHistory(activeIdx) {
+            histStrip.innerHTML = '';
+            if (!history.length) {
+                histStrip.innerHTML = '<span class="hist-empty">Паттерны появятся здесь</span>';
+                return;
+            }
+            history.forEach((entry, idx) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'hist-thumb' + (idx === activeIdx ? ' active' : '');
+                wrap.title = 'Восстановить · ' + settToTCString(entry.tokens);
+                const img = document.createElement('img');
+                img.src = entry.thumb;
+                wrap.appendChild(img);
+                wrap.addEventListener('click', () => {
+                    currentTokens = entry.tokens;
+                    currentHistorical = entry.historical;
+                    currentSize = entry.size;
+                    sizeEl.value = entry.size;
+                    sizeLabel.textContent = entry.size + ' px';
+                    tcInput.value = settToTCString(entry.tokens);
+                    setLoading(true);
+                    setTimeout(() => {
+                        doRender();
+                        updateUI(currentTokens, currentHistorical);
+                        setLoading(false);
+                        renderHistory(idx);
+                    }, 20);
+                });
+                histStrip.appendChild(wrap);
+            });
+        }
+
+        // Старт
+        generate();
+    </script>
 </body>
+
 </html>
