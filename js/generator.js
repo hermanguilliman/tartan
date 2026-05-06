@@ -7,11 +7,11 @@ function generateSett(domKey, toneKey) {
 
     var accSet = pick(ACCENT_SETS[domKey] || ACCENT_SETS["G"]);
 
-    var domW1 = Math.floor(rand(40, 100));
-    var domW2 = Math.floor(rand(18, 44));
-    var acc1W = Math.floor(rand(4, 16));
-    var acc2W = Math.floor(rand(2, 8));
-    var midW = accSet.length > 2 ? Math.floor(rand(6, 14)) : 0;
+    var domW1 = Math.floor(rand(28, 56));
+    var domW2 = Math.floor(rand(14, 28));
+    var acc1W = Math.floor(rand(4, 8));
+    var acc2W = Math.floor(rand(2, 6));
+    var midW = accSet.length > 2 ? Math.floor(rand(4, 8)) : 0;
 
     var tokens = [];
 
@@ -22,9 +22,10 @@ function generateSett(domKey, toneKey) {
     if (accSet.length > 2 && midW > 0) {
         tokens.push({ code: domCode, count: domW2, pivot: false });
         tokens.push({ code: accSet[2], count: midW, pivot: false });
+    } else {
+        tokens.push({ code: domCode, count: domW2, pivot: false });
     }
 
-    tokens.push({ code: domCode, count: domW2, pivot: false });
     tokens.push({
         code: accSet[1 % accSet.length],
         count: acc2W,
