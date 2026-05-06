@@ -21,7 +21,25 @@
     var currentHistorical = false;
     var currentSize = 768;
     var HIST_MAX = 10;
+
     var history = [];
+    try {
+        var savedHistory = localStorage.getItem("tartan_history");
+        if (savedHistory) {
+            history = JSON.parse(savedHistory);
+        }
+    } catch (e) {
+        console.error("Ошибка загрузки истории", e);
+        history = [];
+    }
+
+    function saveHistoryToStore() {
+        try {
+            localStorage.setItem("tartan_history", JSON.stringify(history));
+        } catch (e) {
+            console.warn("История слишком большая для сохранения", e);
+        }
+    }
 
     function setLoading(on) {
         loaderEl.classList.toggle("on", on);
@@ -135,13 +153,24 @@
 
     function addToHistory(tokens, historical) {
         var thumb = makeThumbnail(tokens, historical);
+
+        if (
+            history.length > 0 &&
+            settToTCString(history[0].tokens) === settToTCString(tokens)
+        ) {
+            return;
+        }
+
         history.unshift({
             tokens: tokens.slice(),
             historical: historical,
             thumb: thumb,
             size: currentSize,
         });
+
         if (history.length > HIST_MAX) history.pop();
+
+        saveHistoryToStore();
         renderHistory(0);
     }
 
@@ -237,5 +266,24 @@
             a.click();
         });
 
-    generate();
+    if (history.length > 0) {
+        var last = history[0];
+        currentTokens = last.tokens;
+        currentHistorical = last.historical;
+        currentSize = last.size || 768;
+
+        tcInput.value = settToTCString(currentTokens);
+        sizeEl.value = currentSize;
+        sizeLabel.textContent = currentSize + " px";
+
+        setLoading(true);
+        setTimeout(function () {
+            doRender();
+            updateUI(currentTokens);
+            renderHistory(0);
+            setLoading(false);
+        }, 100);
+    } else {
+        generate();
+    }
 })();
