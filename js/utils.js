@@ -10,7 +10,6 @@ function clamp(v) {
     return Math.max(0, Math.min(255, v));
 }
 
-/** Получить RGB-массив по коду из палитры с небольшим джиттером */
 function getColor(code, jitter) {
     if (jitter === undefined) jitter = 8;
     var v = PALETTE[code];
@@ -21,7 +20,6 @@ function getColor(code, jitter) {
     });
 }
 
-/** Приглушение для исторического тона */
 function historicize(rgb) {
     var avg = (rgb[0] + rgb[1] + rgb[2]) / 3;
     return [
@@ -29,4 +27,17 @@ function historicize(rgb) {
         clamp(Math.round(rgb[1] * 0.68 + avg * 0.32)),
         clamp(Math.round(rgb[2] * 0.68 + avg * 0.32)),
     ];
+}
+
+function getAverageColor(pattern) {
+    var r = 0,
+        g = 0,
+        b = 0;
+    var len = pattern.length;
+    for (var i = 0; i < len; i++) {
+        r += pattern[i][0];
+        g += pattern[i][1];
+        b += pattern[i][2];
+    }
+    return [Math.round(r / len), Math.round(g / len), Math.round(b / len)];
 }

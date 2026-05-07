@@ -3,6 +3,8 @@
 
     var canvasEl = document.getElementById("canvas");
     var loaderEl = document.getElementById("loader");
+    var containerEl = document.getElementById("canvasContainer");
+    var previewArea = document.getElementById("previewArea");
     var histStrip = document.getElementById("histStrip");
     var dominantEl = document.getElementById("dominant");
     var toneEl = document.getElementById("tone");
@@ -16,20 +18,25 @@
     var paletteRow = document.getElementById("paletteRow");
     var colorDot = document.getElementById("colorDot");
     var clanName = document.getElementById("clanName");
+    var dlBtn = document.getElementById("downloadBtn");
+
+    var currentMode = "pattern";
+    var wpPresetW = 1179;
+    var wpPresetH = 2556;
+    var wpStyle = "fill";
+    var wpVignette = true;
+    var wpVignetteStrength = 0.5;
 
     var currentTokens = null;
     var currentHistorical = false;
     var currentSize = 768;
-    var HIST_MAX = 10;
+    var HIST_MAX = 12;
 
     var history = [];
     try {
-        var savedHistory = localStorage.getItem("tartan_history");
-        if (savedHistory) {
-            history = JSON.parse(savedHistory);
-        }
+        var saved = localStorage.getItem("tartan_history");
+        if (saved) history = JSON.parse(saved);
     } catch (e) {
-        console.error("Ошибка загрузки истории", e);
         history = [];
     }
 
@@ -37,7 +44,7 @@
         try {
             localStorage.setItem("tartan_history", JSON.stringify(history));
         } catch (e) {
-            console.warn("История слишком большая для сохранения", e);
+            /* quota */
         }
     }
 
@@ -60,8 +67,6 @@
             sw.className = "swatch";
             sw.style.background =
                 "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
-            sw.title =
-                t.code + " — rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
             paletteRow.appendChild(sw);
         });
 
@@ -70,16 +75,11 @@
         colorDot.style.background =
             "rgb(" + firstCol[0] + "," + firstCol[1] + "," + firstCol[2] + ")";
 
-        var clan = pick(CLANS);
-        clanName.textContent = clan.name;
+        clanName.textContent = pick(CLANS).name;
     }
 
-    function doRender() {
-        if (!currentTokens) return;
-        canvasEl.width = canvasEl.height = currentSize;
-
+    function buildPatterns() {
         var pattern = buildPatternFromTokens(currentTokens, currentHistorical);
-
         var weftPattern = pattern;
         if (warpweftEl.checked) {
             var offset = Math.floor(
@@ -89,13 +89,90 @@
                 .slice(offset)
                 .concat(pattern.slice(0, offset));
         }
-
-        drawTartan(canvasEl, pattern, weftPattern, textureEl.checked);
+        return { warp: pattern, weft: weftPattern };
     }
 
+    function getWallpaperOptions() {
+        return {
+            mode: wpStyle,
+            vignette: wpVignette,
+            vignetteStrength: wpVignetteStrength,
+        };
+    }
+
+    /* ─── Размеры превью ─── */
+    function calcPreviewSize() {
+        var inner = document.querySelector(".preview-inner");
+        if (!inner) return { w: 512, h: 512 };
+        var availW = inner.clientWidth - 20;
+        var availH = inner.clientHeight - 20;
+        availW = Math.max(100, availW);
+        availH = Math.max(100, availH);
+
+        if (currentMode === "pattern") {
+            var side = Math.min(availW, availH, 800);
+            side = Math.max(200, side);
+            return { w: side, h: side };
+        }
+
+        var ratio = wpPresetW / wpPresetH;
+        var pw, ph;
+        if (ratio < 1) {
+            ph = Math.min(availH, 720);
+            pw = Math.round(ph * ratio);
+            if (pw > availW) {
+                pw = availW;
+                ph = Math.round(pw / ratio);
+            }
+        } else {
+            pw = Math.min(availW, 800);
+            ph = Math.round(pw / ratio);
+            if (ph > availH) {
+                ph = availH;
+                pw = Math.round(ph * ratio);
+            }
+        }
+        return { w: Math.max(100, pw), h: Math.max(100, ph) };
+    }
+
+    /* ─── Рендер ─── */
+    function doRender() {
+        if (!currentTokens) return;
+
+        var sz = calcPreviewSize();
+        canvasEl.width = sz.w;
+        canvasEl.height = sz.h;
+
+        /* Класс устройства для рамки */
+        containerEl.classList.remove("device-phone", "device-desktop");
+        if (currentMode === "wallpaper") {
+            var ratio = wpPresetW / wpPresetH;
+            containerEl.classList.add(
+                ratio < 1 ? "device-phone" : "device-desktop",
+            );
+        }
+
+        var p = buildPatterns();
+
+        if (currentMode === "pattern") {
+            canvasEl.style.imageRendering = "pixelated";
+            drawTartan(canvasEl, p.warp, p.weft, textureEl.checked);
+        } else {
+            canvasEl.style.imageRendering = "auto";
+            drawWallpaper(
+                canvasEl,
+                p.warp,
+                p.weft,
+                textureEl.checked,
+                getWallpaperOptions(),
+            );
+        }
+    }
+
+    /* ─── Генерация ─── */
     function generate() {
         currentSize = parseInt(sizeEl.value);
-        sizeLabel.textContent = currentSize + " px";
+        sizeLabel.textContent = currentSize;
 
         var domKey =
             dominantEl.value === "any"
@@ -122,7 +199,6 @@
     function applyThreadCount() {
         var str = tcInput.value.trim();
         if (!str) return;
-
         var tokens = parseThreadCount(str);
         if (!tokens) {
             tcError.classList.add("show");
@@ -142,8 +218,9 @@
         }, 30);
     }
 
+    /* ─── История ─── */
     function makeThumbnail(tokens, historical) {
-        var S = 120;
+        var S = 80;
         var mini = document.createElement("canvas");
         mini.width = mini.height = S;
         var pattern = buildPatternFromTokens(tokens, historical);
@@ -153,13 +230,11 @@
 
     function addToHistory(tokens, historical) {
         var thumb = makeThumbnail(tokens, historical);
-
         if (
             history.length > 0 &&
             settToTCString(history[0].tokens) === settToTCString(tokens)
-        ) {
+        )
             return;
-        }
 
         history.unshift({
             tokens: tokens.slice(),
@@ -167,9 +242,7 @@
             thumb: thumb,
             size: currentSize,
         });
-
         if (history.length > HIST_MAX) history.pop();
-
         saveHistoryToStore();
         renderHistory(0);
     }
@@ -178,14 +251,14 @@
         histStrip.innerHTML = "";
         if (!history.length) {
             histStrip.innerHTML =
-                '<span class="hist-empty">Паттерны появятся здесь</span>';
+                '<span class="hist-empty">История пуста</span>';
             return;
         }
         history.forEach(function (entry, idx) {
             var wrap = document.createElement("div");
             wrap.className =
                 "hist-thumb" + (idx === activeIdx ? " active" : "");
-            wrap.title = "Восстановить · " + settToTCString(entry.tokens);
+            wrap.title = settToTCString(entry.tokens);
 
             var img = document.createElement("img");
             img.src = entry.thumb;
@@ -196,7 +269,7 @@
                 currentHistorical = entry.historical;
                 currentSize = entry.size;
                 sizeEl.value = entry.size;
-                sizeLabel.textContent = entry.size + " px";
+                sizeLabel.textContent = entry.size;
                 tcInput.value = settToTCString(entry.tokens);
 
                 setLoading(true);
@@ -212,6 +285,106 @@
         });
     }
 
+    /* ─── Табы ─── */
+    document.querySelectorAll(".mode-tab").forEach(function (tab) {
+        tab.addEventListener("click", function () {
+            switchMode(this.dataset.mode);
+        });
+    });
+
+    function switchMode(mode) {
+        currentMode = mode;
+
+        document.querySelectorAll(".mode-tab").forEach(function (t) {
+            t.classList.toggle("active", t.dataset.mode === mode);
+        });
+
+        document.getElementById("patternControls").style.display =
+            mode === "pattern" ? "block" : "none";
+        document.getElementById("wallpaperControls").style.display =
+            mode === "wallpaper" ? "block" : "none";
+        document.getElementById("patternExport").style.display =
+            mode === "pattern" ? "block" : "none";
+        document.getElementById("wallpaperExport").style.display =
+            mode === "wallpaper" ? "block" : "none";
+
+        dlBtn.textContent = mode === "pattern" ? "Скачать PNG" : "Скачать обои";
+        dlBtn.classList.toggle("wp-mode", mode === "wallpaper");
+
+        if (currentTokens) {
+            setLoading(true);
+            setTimeout(function () {
+                doRender();
+                setLoading(false);
+            }, 30);
+        }
+    }
+
+    /* ─── Пресеты ─── */
+    document.querySelectorAll(".preset-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            document.querySelectorAll(".preset-btn").forEach(function (b) {
+                b.classList.remove("active");
+            });
+            this.classList.add("active");
+            wpPresetW = parseInt(this.dataset.w);
+            wpPresetH = parseInt(this.dataset.h);
+            document.getElementById("wpSizeInfo").textContent =
+                wpPresetW + " \u00d7 " + wpPresetH;
+
+            if (currentTokens) {
+                setLoading(true);
+                setTimeout(function () {
+                    doRender();
+                    setLoading(false);
+                }, 30);
+            }
+        });
+    });
+
+    /* ─── Стили ─── */
+    document.querySelectorAll(".style-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            document.querySelectorAll(".style-btn").forEach(function (b) {
+                b.classList.remove("active");
+            });
+            this.classList.add("active");
+            wpStyle = this.dataset.style;
+
+            if (currentTokens) {
+                setLoading(true);
+                setTimeout(function () {
+                    doRender();
+                    setLoading(false);
+                }, 30);
+            }
+        });
+    });
+
+    /* ─── Виньетка ─── */
+    var wpVignetteEl = document.getElementById("wpVignette");
+    var wpVignetteStrEl = document.getElementById("wpVignetteStrength");
+    var wpVignetteLbl = document.getElementById("wpVignetteLabel");
+
+    wpVignetteEl.addEventListener("change", function () {
+        wpVignette = this.checked;
+        wpVignetteStrEl.disabled = !wpVignette;
+        if (currentTokens && currentMode === "wallpaper") {
+            setLoading(true);
+            setTimeout(function () {
+                doRender();
+                setLoading(false);
+            }, 30);
+        }
+    });
+
+    wpVignetteStrEl.addEventListener("input", function () {
+        wpVignetteStrength = parseFloat(this.value);
+        wpVignetteLbl.textContent = wpVignetteStrength.toFixed(2);
+        if (currentTokens && currentMode === "wallpaper") doRender();
+    });
+
+    /* ─── Параметры ─── */
     textureEl.addEventListener("change", function () {
         if (currentTokens) doRender();
     });
@@ -221,7 +394,7 @@
 
     sizeEl.addEventListener("input", function () {
         currentSize = parseInt(sizeEl.value);
-        sizeLabel.textContent = currentSize + " px";
+        sizeLabel.textContent = currentSize;
         if (!currentTokens) return;
         setLoading(true);
         setTimeout(function () {
@@ -234,10 +407,10 @@
     toneEl.addEventListener("change", generate);
 
     document.getElementById("generateBtn").addEventListener("click", generate);
-
     document
         .getElementById("applyTC")
         .addEventListener("click", applyThreadCount);
+
     tcInput.addEventListener("keydown", function (e) {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
@@ -257,24 +430,72 @@
         generate();
     });
 
-    document
-        .getElementById("downloadBtn")
-        .addEventListener("click", function () {
-            var a = document.createElement("a");
-            a.download = "tartan_" + Date.now() + ".png";
-            a.href = canvasEl.toDataURL("image/png");
-            a.click();
-        });
+    /* ─── Скачивание ─── */
+    dlBtn.addEventListener("click", function () {
+        if (!currentTokens) return;
 
+        if (currentMode === "pattern") {
+            var tmp = document.createElement("canvas");
+            tmp.width = tmp.height = currentSize;
+            var p = buildPatterns();
+            drawTartan(tmp, p.warp, p.weft, textureEl.checked);
+            downloadCanvas(tmp, "tartan_" + Date.now() + ".png");
+        } else {
+            setLoading(true);
+            loaderEl.querySelector("span").textContent = "Генерация обоев...";
+            setTimeout(function () {
+                var off = document.createElement("canvas");
+                off.width = wpPresetW;
+                off.height = wpPresetH;
+                var p = buildPatterns();
+                drawWallpaper(
+                    off,
+                    p.warp,
+                    p.weft,
+                    textureEl.checked,
+                    getWallpaperOptions(),
+                );
+                downloadCanvas(
+                    off,
+                    "tartan_wp_" +
+                        wpPresetW +
+                        "x" +
+                        wpPresetH +
+                        "_" +
+                        Date.now() +
+                        ".png",
+                );
+                setLoading(false);
+                loaderEl.querySelector("span").textContent = "Ткём...";
+            }, 50);
+        }
+    });
+
+    function downloadCanvas(cvs, filename) {
+        var a = document.createElement("a");
+        a.download = filename;
+        a.href = cvs.toDataURL("image/png");
+        a.click();
+    }
+
+    /* ─── Resize ─── */
+    var resizeTimer;
+    window.addEventListener("resize", function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function () {
+            if (currentTokens) doRender();
+        }, 150);
+    });
+
+    /* ─── Инициализация ─── */
     if (history.length > 0) {
         var last = history[0];
         currentTokens = last.tokens;
         currentHistorical = last.historical;
         currentSize = last.size || 768;
-
         tcInput.value = settToTCString(currentTokens);
         sizeEl.value = currentSize;
-        sizeLabel.textContent = currentSize + " px";
+        sizeLabel.textContent = currentSize;
 
         setLoading(true);
         setTimeout(function () {

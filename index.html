@@ -10,109 +10,161 @@
 
 <body>
 
-    <header>🏴󠁧󠁢󠁳󠁣󠁴󠁿 Генератор тартана</header>
-    <p class="subtitle">Создавай уникальные шотландские узоры — от классики до экспериментов</p>
 
-    <div class="container">
+    <header class="topbar">
+        <span class="logo">Tartan</span>
+        <div class="mode-tabs">
+            <button class="mode-tab active" data-mode="pattern">Узор</button>
+            <button class="mode-tab" data-mode="wallpaper">Обои</button>
+        </div>
+        <div class="topbar-spacer"></div>
+        <button class="btn-dl-top" id="downloadBtn">Скачать PNG</button>
+    </header>
 
 
-        <div class="panel controls-panel">
+    <main class="main">
 
-            <div class="sec">Доминирующий цвет</div>
-            <div class="row">
+
+        <aside class="sidebar">
+
+            <div class="ctrl-label">Цвет</div>
+            <div class="ctrl-row">
                 <select id="dominant">
                     <option value="any">Случайный</option>
-                    <option value="B">B — Синий</option>
-                    <option value="G">G — Зелёный</option>
-                    <option value="K">K — Чёрный</option>
-                    <option value="R">R — Красный</option>
-                    <option value="T">T — Коричневый</option>
-                    <option value="P">P — Фиолетовый</option>
-                    <option value="Y">Y — Жёлтый / Золотой</option>
-                    <option value="N">N — Серый</option>
-                    <option value="W">W — Белый / Кремовый</option>
-                    <option value="C">C — Малиновый</option>
-                    <option value="M">M — Пурпурный</option>
-                    <option value="E">E — Бирюзовый</option>
-                    <option value="I">I — Индиго</option>
-                    <option value="S">S — Сланцевый</option>
+                    <option value="B">Синий</option>
+                    <option value="G">Зелёный</option>
+                    <option value="K">Чёрный</option>
+                    <option value="R">Красный</option>
+                    <option value="T">Коричневый</option>
+                    <option value="P">Фиолетовый</option>
+                    <option value="Y">Жёлтый</option>
+                    <option value="N">Серый</option>
+                    <option value="W">Белый</option>
+                    <option value="C">Малиновый</option>
+                    <option value="M">Пурпурный</option>
+                    <option value="E">Бирюзовый</option>
+                    <option value="I">Индиго</option>
+                    <option value="S">Сланцевый</option>
                 </select>
                 <div class="color-dot" id="colorDot"></div>
             </div>
 
-            <div class="sec">Тон</div>
-            <div class="row">
-                <select id="tone">
-                    <option value="any">Любой</option>
-                    <option value="dark">Тёмный (D…)</option>
-                    <option value="light">Светлый (L…)</option>
-                    <option value="historical">Исторический (приглушённый)</option>
-                    <option value="modern">Современный (насыщенный)</option>
-                </select>
+            <div class="ctrl-label">Тон</div>
+            <select id="tone">
+                <option value="any">Любой</option>
+                <option value="dark">Тёмный</option>
+                <option value="light">Светлый</option>
+                <option value="historical">Исторический</option>
+                <option value="modern">Современный</option>
+            </select>
+
+            <div class="ctrl-label">Ткань</div>
+            <label class="ctrl-check"><input type="checkbox" id="texture" checked> Саржа 2/2</label>
+            <label class="ctrl-check"><input type="checkbox" id="warpweft"> Основа \u2260 уток</label>
+
+            <div class="ctrl-divider"></div>
+
+
+            <div id="patternControls">
+                <div class="ctrl-label">Thread count</div>
+                <textarea id="tcInput" rows="2" placeholder="G/24 B4 K24 B4 G/24"></textarea>
+                <div class="tc-error" id="tcError">Ошибка. Пример: G/24 B4 K24</div>
+                <button class="btn-sm" id="applyTC">Применить</button>
+                <div class="tc-hint">B G K R T P Y N W O C M E I S · D/L префиксы · / якорь</div>
             </div>
 
-            <div class="sec">Параметры ткани</div>
-            <label style="margin-bottom:8px"><input type="checkbox" id="texture" checked> Текстура саржи (twill
-                2/2)</label>
-            <label><input type="checkbox" id="warpweft"> Разные цвета основы и утка (rare)</label>
 
-            <div class="divider"></div>
+            <div id="wallpaperControls" style="display:none">
+                <div class="ctrl-label">Устройство</div>
+                <div class="preset-grid">
+                    <button class="preset-btn active" data-w="1179" data-h="2556">
+                        <span class="pn">iPhone 15</span><span class="ps">1179\u00d72556</span>
+                    </button>
+                    <button class="preset-btn" data-w="1290" data-h="2796">
+                        <span class="pn">Pro Max</span><span class="ps">1290\u00d72796</span>
+                    </button>
+                    <button class="preset-btn" data-w="1080" data-h="2400">
+                        <span class="pn">Android</span><span class="ps">1080\u00d72400</span>
+                    </button>
+                    <button class="preset-btn" data-w="1440" data-h="3200">
+                        <span class="pn">Android QHD</span><span class="ps">1440\u00d73200</span>
+                    </button>
+                    <button class="preset-btn" data-w="1920" data-h="1080">
+                        <span class="pn">Full HD</span><span class="ps">1920\u00d71080</span>
+                    </button>
+                    <button class="preset-btn" data-w="2560" data-h="1440">
+                        <span class="pn">QHD</span><span class="ps">2560\u00d71440</span>
+                    </button>
+                    <button class="preset-btn" data-w="3840" data-h="2160">
+                        <span class="pn">4K UHD</span><span class="ps">3840\u00d72160</span>
+                    </button>
+                    <button class="preset-btn" data-w="3440" data-h="1440">
+                        <span class="pn">Ultrawide</span><span class="ps">3440\u00d71440</span>
+                    </button>
+                </div>
 
-            <div class="sec">Thread count (нотация STA)</div>
-            <textarea id="tcInput" placeholder="Пример: G/24 B4 K24 B4 G/24&#10;Или: R32 K4 G32 K4 W4 K4"></textarea>
-            <div class="tc-error" id="tcError">Ошибка разбора. Пример: G/24 B4 K24</div>
-            <div style="display:flex;gap:8px;margin-top:7px;align-items:center;">
-                <button class="btn-apply" id="applyTC">Применить →</button>
-                <span style="font-size:11px;color:var(--text-muted)">или генерируй ниже</span>
-            </div>
-            <div class="tc-hint">
-                Коды: B=синий G=зелёный K=чёрный R=красный T=коричневый P=фиолетовый Y=жёлтый N=серый W=белый
-                O=оранжевый C=малиновый M=пурпурный E=бирюзовый I=индиго S=сланцевый<br>
-                Префиксы D=тёмный L=светлый. Якоря пишутся через слэш: G/24
-            </div>
+                <div class="ctrl-label">Стиль</div>
+                <div class="style-grid">
+                    <button class="style-btn active" data-style="fill">Заполнение</button>
+                    <button class="style-btn" data-style="tile">Мозаика</button>
+                    <button class="style-btn" data-style="center">Центр</button>
+                    <button class="style-btn" data-style="gradient">Градиент</button>
+                </div>
 
-            <div class="divider"></div>
-
-            <div class="sec">Текущий паттерн</div>
-            <div class="tc-box" id="tcDisplay">—</div>
-            <div class="palette-row" id="paletteRow"></div>
-            <div class="clan-badge" id="clanBadge" style="margin-top:8px;">Клан: <span class="clan-name"
-                    id="clanName">—</span></div>
-
-            <div class="divider"></div>
-
-            <div class="sec">Экспорт</div>
-            <label style="margin-bottom:6px;">Разрешение файла</label>
-            <div class="slider-row">
-                <input type="range" id="size" min="256" max="2048" step="64" value="768">
-                <span class="slider-val" id="sizeLabel">768 px</span>
-            </div>
-
-            <div class="btn-grid">
-                <button class="btn-gen" id="generateBtn">✨ Создать</button>
-                <button class="btn-rand" id="randomBtn">🎲 Случайный</button>
-            </div>
-            <button class="btn-dl" id="downloadBtn">💾 Скачать PNG</button>
-
-        </div>
-
-
-        <div class="panel canvas-panel">
-            <div class="canvas-wrap">
-                <canvas id="canvas"></canvas>
-                <div class="loader-overlay" id="loader">
-                    <div class="spinner"></div>
-                    <div class="loader-text">Ткём узор…</div>
+                <label class="ctrl-check" style="margin-top:8px"><input type="checkbox" id="wpVignette" checked>
+                    Виньетка</label>
+                <div class="ctrl-slider">
+                    <span style="font-size:10px;color:var(--muted);min-width:28px">Сила</span>
+                    <input type="range" id="wpVignetteStrength" min="0.1" max="0.9" step="0.05" value="0.50">
+                    <span class="slider-val" id="wpVignetteLabel">0.50</span>
                 </div>
             </div>
-            <div class="hist-label">История</div>
-            <div class="hist-strip" id="histStrip">
-                <span class="hist-empty">Паттерны появятся здесь</span>
+
+            <div class="ctrl-divider"></div>
+
+            <div class="ctrl-label">Паттерн</div>
+            <div class="tc-box" id="tcDisplay">\u2014</div>
+            <div class="palette-row" id="paletteRow"></div>
+            <div class="clan-badge">Клан: <span class="clan-name" id="clanName">\u2014</span></div>
+
+            <div class="ctrl-divider"></div>
+
+
+            <div id="patternExport">
+                <div class="ctrl-slider">
+                    <span style="font-size:10px;color:var(--muted);min-width:28px">px</span>
+                    <input type="range" id="size" min="256" max="2048" step="64" value="768">
+                    <span class="slider-val" id="sizeLabel">768</span>
+                </div>
             </div>
-        </div>
+            <div id="wallpaperExport" style="display:none">
+                <div class="wp-size-info" id="wpSizeInfo">1179 \u00d7 2556</div>
+            </div>
 
-    </div>
+            <div class="ctrl-actions">
+                <button class="btn-gen" id="generateBtn">Создать</button>
+                <button class="btn-rand" id="randomBtn">Случайный</button>
+            </div>
 
+        </aside>
+
+
+        <section class="preview" id="previewArea">
+            <div class="preview-inner">
+                <div class="canvas-container" id="canvasContainer">
+                    <canvas id="canvas"></canvas>
+                    <div class="loader-overlay" id="loader">
+                        <div class="spinner"></div>
+                        <span>\u0422\u043a\u0451\u043c...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hist-strip" id="histStrip">
+                <span class="hist-empty">История пуста</span>
+            </div>
+        </section>
+
+    </main>
 
     <script src="js/data.js"></script>
     <script src="js/utils.js"></script>
@@ -121,9 +173,6 @@
     <script src="js/renderer.js"></script>
     <script src="js/ui.js"></script>
 
-    <footer>
-        &copy; Herman Guilliman 2026
-    </footer>
 </body>
 
 </html>
