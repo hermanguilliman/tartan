@@ -10,7 +10,6 @@
 
 <body>
 
-
     <header class="topbar">
         <span class="logo">Tartan</span>
         <div class="mode-tabs">
@@ -21,9 +20,7 @@
         <button class="btn-dl-top" id="downloadBtn">Скачать PNG</button>
     </header>
 
-
     <main class="main">
-
 
         <aside class="sidebar">
 
@@ -60,46 +57,49 @@
 
             <div class="ctrl-label">Ткань</div>
             <label class="ctrl-check"><input type="checkbox" id="texture" checked> Саржа 2/2</label>
-            <label class="ctrl-check"><input type="checkbox" id="warpweft"> Основа \u2260 уток</label>
+            <label class="ctrl-check"><input type="checkbox" id="warpweft"> Разные основа и утка</label>
+            <div class="ctrl-slider" style="margin-top:6px">
+                <span class="slider-name">Плотность</span>
+                <input type="range" id="density" min="0.5" max="5" step="0.5" value="1">
+                <span class="slider-val" id="densityLabel">1x</span>
+            </div>
 
             <div class="ctrl-divider"></div>
-
 
             <div id="patternControls">
                 <div class="ctrl-label">Thread count</div>
                 <textarea id="tcInput" rows="2" placeholder="G/24 B4 K24 B4 G/24"></textarea>
-                <div class="tc-error" id="tcError">Ошибка. Пример: G/24 B4 K24</div>
+                <div class="tc-error" id="tcError">Ошибка разбора. Пример: G/24 B4 K24</div>
                 <button class="btn-sm" id="applyTC">Применить</button>
-                <div class="tc-hint">B G K R T P Y N W O C M E I S · D/L префиксы · / якорь</div>
+                <div class="tc-hint">B G K R T P Y N W O C M E I S · D/L — префиксы · / — якорь</div>
             </div>
-
 
             <div id="wallpaperControls" style="display:none">
                 <div class="ctrl-label">Устройство</div>
                 <div class="preset-grid">
                     <button class="preset-btn active" data-w="1179" data-h="2556">
-                        <span class="pn">iPhone 15</span><span class="ps">1179\u00d72556</span>
+                        <span class="pn">iPhone 15</span><span class="ps">1179 × 2556</span>
                     </button>
                     <button class="preset-btn" data-w="1290" data-h="2796">
-                        <span class="pn">Pro Max</span><span class="ps">1290\u00d72796</span>
+                        <span class="pn">Pro Max</span><span class="ps">1290 × 2796</span>
                     </button>
                     <button class="preset-btn" data-w="1080" data-h="2400">
-                        <span class="pn">Android</span><span class="ps">1080\u00d72400</span>
+                        <span class="pn">Android</span><span class="ps">1080 × 2400</span>
                     </button>
                     <button class="preset-btn" data-w="1440" data-h="3200">
-                        <span class="pn">Android QHD</span><span class="ps">1440\u00d73200</span>
+                        <span class="pn">Android QHD</span><span class="ps">1440 × 3200</span>
                     </button>
                     <button class="preset-btn" data-w="1920" data-h="1080">
-                        <span class="pn">Full HD</span><span class="ps">1920\u00d71080</span>
+                        <span class="pn">Full HD</span><span class="ps">1920 × 1080</span>
                     </button>
                     <button class="preset-btn" data-w="2560" data-h="1440">
-                        <span class="pn">QHD</span><span class="ps">2560\u00d71440</span>
+                        <span class="pn">QHD</span><span class="ps">2560 × 1440</span>
                     </button>
                     <button class="preset-btn" data-w="3840" data-h="2160">
-                        <span class="pn">4K UHD</span><span class="ps">3840\u00d72160</span>
+                        <span class="pn">4K UHD</span><span class="ps">3840 × 2160</span>
                     </button>
                     <button class="preset-btn" data-w="3440" data-h="1440">
-                        <span class="pn">Ultrawide</span><span class="ps">3440\u00d71440</span>
+                        <span class="pn">Ultrawide</span><span class="ps">3440 × 1440</span>
                     </button>
                 </div>
 
@@ -107,38 +107,28 @@
                 <div class="style-grid">
                     <button class="style-btn active" data-style="fill">Заполнение</button>
                     <button class="style-btn" data-style="tile">Мозаика</button>
-                    <button class="style-btn" data-style="center">Центр</button>
                     <button class="style-btn" data-style="gradient">Градиент</button>
-                </div>
-
-                <label class="ctrl-check" style="margin-top:8px"><input type="checkbox" id="wpVignette" checked>
-                    Виньетка</label>
-                <div class="ctrl-slider">
-                    <span style="font-size:10px;color:var(--muted);min-width:28px">Сила</span>
-                    <input type="range" id="wpVignetteStrength" min="0.1" max="0.9" step="0.05" value="0.50">
-                    <span class="slider-val" id="wpVignetteLabel">0.50</span>
                 </div>
             </div>
 
             <div class="ctrl-divider"></div>
 
             <div class="ctrl-label">Паттерн</div>
-            <div class="tc-box" id="tcDisplay">\u2014</div>
+            <div class="tc-box" id="tcDisplay">—</div>
             <div class="palette-row" id="paletteRow"></div>
-            <div class="clan-badge">Клан: <span class="clan-name" id="clanName">\u2014</span></div>
+            <div class="clan-badge">Клан: <span class="clan-name" id="clanName">—</span></div>
 
             <div class="ctrl-divider"></div>
 
-
             <div id="patternExport">
                 <div class="ctrl-slider">
-                    <span style="font-size:10px;color:var(--muted);min-width:28px">px</span>
+                    <span class="slider-name">Размер</span>
                     <input type="range" id="size" min="256" max="2048" step="64" value="768">
                     <span class="slider-val" id="sizeLabel">768</span>
                 </div>
             </div>
             <div id="wallpaperExport" style="display:none">
-                <div class="wp-size-info" id="wpSizeInfo">1179 \u00d7 2556</div>
+                <div class="wp-size-info" id="wpSizeInfo">1179 × 2556</div>
             </div>
 
             <div class="ctrl-actions">
@@ -148,14 +138,13 @@
 
         </aside>
 
-
         <section class="preview" id="previewArea">
             <div class="preview-inner">
                 <div class="canvas-container" id="canvasContainer">
                     <canvas id="canvas"></canvas>
                     <div class="loader-overlay" id="loader">
                         <div class="spinner"></div>
-                        <span>\u0422\u043a\u0451\u043c...</span>
+                        <span>Ткём...</span>
                     </div>
                 </div>
             </div>

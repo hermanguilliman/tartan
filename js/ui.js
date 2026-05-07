@@ -4,12 +4,13 @@
     var canvasEl = document.getElementById("canvas");
     var loaderEl = document.getElementById("loader");
     var containerEl = document.getElementById("canvasContainer");
-    var previewArea = document.getElementById("previewArea");
     var histStrip = document.getElementById("histStrip");
     var dominantEl = document.getElementById("dominant");
     var toneEl = document.getElementById("tone");
     var textureEl = document.getElementById("texture");
     var warpweftEl = document.getElementById("warpweft");
+    var densityEl = document.getElementById("density");
+    var densityLabel = document.getElementById("densityLabel");
     var sizeEl = document.getElementById("size");
     var sizeLabel = document.getElementById("sizeLabel");
     var tcInput = document.getElementById("tcInput");
@@ -24,13 +25,15 @@
     var wpPresetW = 1179;
     var wpPresetH = 2556;
     var wpStyle = "fill";
-    var wpVignette = true;
-    var wpVignetteStrength = 0.5;
 
     var currentTokens = null;
     var currentHistorical = false;
     var currentSize = 768;
     var HIST_MAX = 12;
+
+    /* Offscreen-канвас с полноразмерным рендером */
+    var offscreenCanvas = null;
+    var renderTimer = null;
 
     var history = [];
     try {
@@ -92,81 +95,106 @@
         return { warp: pattern, weft: weftPattern };
     }
 
-    function getWallpaperOptions() {
-        return {
-            mode: wpStyle,
-            vignette: wpVignette,
-            vignetteStrength: wpVignetteStrength,
-        };
+    function getFullResolution() {
+        if (currentMode === "pattern") {
+            return { w: currentSize, h: currentSize };
+        }
+        return { w: wpPresetW, h: wpPresetH };
     }
 
-    /* ─── Размеры превью ─── */
     function calcPreviewSize() {
         var inner = document.querySelector(".preview-inner");
         if (!inner) return { w: 512, h: 512 };
-        var availW = inner.clientWidth - 20;
-        var availH = inner.clientHeight - 20;
+        var availW = inner.clientWidth - 24;
+        var availH = inner.clientHeight - 24;
         availW = Math.max(100, availW);
         availH = Math.max(100, availH);
 
-        if (currentMode === "pattern") {
-            var side = Math.min(availW, availH, 800);
-            side = Math.max(200, side);
-            return { w: side, h: side };
-        }
-
-        var ratio = wpPresetW / wpPresetH;
+        var full = getFullResolution();
+        var ratio = full.w / full.h;
         var pw, ph;
-        if (ratio < 1) {
-            ph = Math.min(availH, 720);
-            pw = Math.round(ph * ratio);
-            if (pw > availW) {
-                pw = availW;
-                ph = Math.round(pw / ratio);
-            }
-        } else {
+
+        if (ratio >= 1) {
             pw = Math.min(availW, 800);
             ph = Math.round(pw / ratio);
             if (ph > availH) {
                 ph = availH;
                 pw = Math.round(ph * ratio);
             }
+        } else {
+            ph = Math.min(availH, 720);
+            pw = Math.round(ph * ratio);
+            if (pw > availW) {
+                pw = availW;
+                ph = Math.round(pw / ratio);
+            }
         }
-        return { w: Math.max(100, pw), h: Math.max(100, ph) };
+
+        return { w: Math.max(80, pw), h: Math.max(80, ph) };
     }
 
-    /* ─── Рендер ─── */
     function doRender() {
         if (!currentTokens) return;
 
+        var p = buildPatterns();
+        var density = parseFloat(densityEl.value) || 1;
+        var full = getFullResolution();
+
+        /* Полный рендер */
+        offscreenCanvas = document.createElement("canvas");
+        offscreenCanvas.width = full.w;
+        offscreenCanvas.height = full.h;
+
+        if (currentMode === "pattern") {
+            drawTartan(offscreenCanvas, p.warp, p.weft, textureEl.checked, {
+                pixelScale: density,
+            });
+        } else {
+            drawWallpaper(offscreenCanvas, p.warp, p.weft, textureEl.checked, {
+                mode: wpStyle,
+                pixelScale: density,
+            });
+        }
+
+        /* Масштабирование в превью */
         var sz = calcPreviewSize();
         canvasEl.width = sz.w;
         canvasEl.height = sz.h;
 
-        /* Класс устройства для рамки */
         containerEl.classList.remove("device-phone", "device-desktop");
         if (currentMode === "wallpaper") {
-            var ratio = wpPresetW / wpPresetH;
+            var ratio = full.w / full.h;
             containerEl.classList.add(
                 ratio < 1 ? "device-phone" : "device-desktop",
             );
-        }
-
-        var p = buildPatterns();
-
-        if (currentMode === "pattern") {
-            canvasEl.style.imageRendering = "pixelated";
-            drawTartan(canvasEl, p.warp, p.weft, textureEl.checked);
-        } else {
             canvasEl.style.imageRendering = "auto";
-            drawWallpaper(
-                canvasEl,
-                p.warp,
-                p.weft,
-                textureEl.checked,
-                getWallpaperOptions(),
-            );
+        } else {
+            canvasEl.style.imageRendering = "pixelated";
         }
+
+        var ctx = canvasEl.getContext("2d");
+        ctx.imageSmoothingEnabled = currentMode === "wallpaper";
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(offscreenCanvas, 0, 0, sz.w, sz.h);
+    }
+
+    /** Рендер с индикатором загрузки */
+    function renderNow() {
+        setLoading(true);
+        setTimeout(function () {
+            doRender();
+            setLoading(false);
+        }, 10);
+    }
+
+    /** Рендер с задержкой (для слайдеров) — без индикатора */
+    function renderDebounced() {
+        clearTimeout(renderTimer);
+        renderTimer = setTimeout(function () {
+            setTimeout(function () {
+                doRender();
+            }, 10);
+        }, 200);
     }
 
     /* ─── Генерация ─── */
@@ -193,7 +221,7 @@
             updateUI(currentTokens);
             addToHistory(currentTokens, currentHistorical);
             setLoading(false);
-        }, 30);
+        }, 10);
     }
 
     function applyThreadCount() {
@@ -215,7 +243,7 @@
             updateUI(currentTokens);
             addToHistory(currentTokens, currentHistorical);
             setLoading(false);
-        }, 30);
+        }, 10);
     }
 
     /* ─── История ─── */
@@ -224,7 +252,7 @@
         var mini = document.createElement("canvas");
         mini.width = mini.height = S;
         var pattern = buildPatternFromTokens(tokens, historical);
-        drawTartan(mini, pattern, pattern, false);
+        drawTartan(mini, pattern, pattern, false, { pixelScale: 1 });
         return mini.toDataURL();
     }
 
@@ -278,7 +306,7 @@
                     updateUI(currentTokens);
                     setLoading(false);
                     renderHistory(idx);
-                }, 20);
+                }, 10);
             });
 
             histStrip.appendChild(wrap);
@@ -294,11 +322,9 @@
 
     function switchMode(mode) {
         currentMode = mode;
-
         document.querySelectorAll(".mode-tab").forEach(function (t) {
             t.classList.toggle("active", t.dataset.mode === mode);
         });
-
         document.getElementById("patternControls").style.display =
             mode === "pattern" ? "block" : "none";
         document.getElementById("wallpaperControls").style.display =
@@ -307,17 +333,10 @@
             mode === "pattern" ? "block" : "none";
         document.getElementById("wallpaperExport").style.display =
             mode === "wallpaper" ? "block" : "none";
-
         dlBtn.textContent = mode === "pattern" ? "Скачать PNG" : "Скачать обои";
         dlBtn.classList.toggle("wp-mode", mode === "wallpaper");
 
-        if (currentTokens) {
-            setLoading(true);
-            setTimeout(function () {
-                doRender();
-                setLoading(false);
-            }, 30);
-        }
+        renderNow();
     }
 
     /* ─── Пресеты ─── */
@@ -330,15 +349,8 @@
             wpPresetW = parseInt(this.dataset.w);
             wpPresetH = parseInt(this.dataset.h);
             document.getElementById("wpSizeInfo").textContent =
-                wpPresetW + " \u00d7 " + wpPresetH;
-
-            if (currentTokens) {
-                setLoading(true);
-                setTimeout(function () {
-                    doRender();
-                    setLoading(false);
-                }, 30);
-            }
+                wpPresetW + " × " + wpPresetH;
+            renderNow();
         });
     });
 
@@ -350,57 +362,27 @@
             });
             this.classList.add("active");
             wpStyle = this.dataset.style;
-
-            if (currentTokens) {
-                setLoading(true);
-                setTimeout(function () {
-                    doRender();
-                    setLoading(false);
-                }, 30);
-            }
+            renderNow();
         });
-    });
-
-    /* ─── Виньетка ─── */
-    var wpVignetteEl = document.getElementById("wpVignette");
-    var wpVignetteStrEl = document.getElementById("wpVignetteStrength");
-    var wpVignetteLbl = document.getElementById("wpVignetteLabel");
-
-    wpVignetteEl.addEventListener("change", function () {
-        wpVignette = this.checked;
-        wpVignetteStrEl.disabled = !wpVignette;
-        if (currentTokens && currentMode === "wallpaper") {
-            setLoading(true);
-            setTimeout(function () {
-                doRender();
-                setLoading(false);
-            }, 30);
-        }
-    });
-
-    wpVignetteStrEl.addEventListener("input", function () {
-        wpVignetteStrength = parseFloat(this.value);
-        wpVignetteLbl.textContent = wpVignetteStrength.toFixed(2);
-        if (currentTokens && currentMode === "wallpaper") doRender();
     });
 
     /* ─── Параметры ─── */
     textureEl.addEventListener("change", function () {
-        if (currentTokens) doRender();
+        renderNow();
     });
     warpweftEl.addEventListener("change", function () {
-        if (currentTokens) doRender();
+        renderNow();
+    });
+
+    densityEl.addEventListener("input", function () {
+        densityLabel.textContent = this.value + "x";
+        renderDebounced();
     });
 
     sizeEl.addEventListener("input", function () {
         currentSize = parseInt(sizeEl.value);
         sizeLabel.textContent = currentSize;
-        if (!currentTokens) return;
-        setLoading(true);
-        setTimeout(function () {
-            doRender();
-            setLoading(false);
-        }, 30);
+        renderDebounced();
     });
 
     dominantEl.addEventListener("change", generate);
@@ -430,60 +412,49 @@
         generate();
     });
 
-    /* ─── Скачивание ─── */
+    /* ─── Скачивание — используем готовый offscreen-канвас ─── */
     dlBtn.addEventListener("click", function () {
         if (!currentTokens) return;
 
-        if (currentMode === "pattern") {
-            var tmp = document.createElement("canvas");
-            tmp.width = tmp.height = currentSize;
-            var p = buildPatterns();
-            drawTartan(tmp, p.warp, p.weft, textureEl.checked);
-            downloadCanvas(tmp, "tartan_" + Date.now() + ".png");
-        } else {
-            setLoading(true);
-            loaderEl.querySelector("span").textContent = "Генерация обоев...";
-            setTimeout(function () {
-                var off = document.createElement("canvas");
-                off.width = wpPresetW;
-                off.height = wpPresetH;
-                var p = buildPatterns();
-                drawWallpaper(
-                    off,
-                    p.warp,
-                    p.weft,
-                    textureEl.checked,
-                    getWallpaperOptions(),
-                );
-                downloadCanvas(
-                    off,
-                    "tartan_wp_" +
-                        wpPresetW +
-                        "x" +
-                        wpPresetH +
-                        "_" +
-                        Date.now() +
-                        ".png",
-                );
-                setLoading(false);
-                loaderEl.querySelector("span").textContent = "Ткём...";
-            }, 50);
+        /* Если offscreen ещё не создан — рендерим синхронно */
+        if (!offscreenCanvas) {
+            doRender();
         }
-    });
 
-    function downloadCanvas(cvs, filename) {
+        var filename;
+        if (currentMode === "pattern") {
+            filename = "tartan_" + Date.now() + ".png";
+        } else {
+            filename =
+                "tartan_wp_" +
+                wpPresetW +
+                "x" +
+                wpPresetH +
+                "_" +
+                Date.now() +
+                ".png";
+        }
+
         var a = document.createElement("a");
         a.download = filename;
-        a.href = cvs.toDataURL("image/png");
+        a.href = offscreenCanvas.toDataURL("image/png");
         a.click();
-    }
+    });
 
     /* ─── Resize ─── */
     var resizeTimer;
     window.addEventListener("resize", function () {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(function () {
-            if (currentTokens) doRender();
+            if (!currentTokens || !offscreenCanvas) return;
+            /* Только обновляем превью, без повторного полного рендера */
+            var sz = calcPreviewSize();
+            canvasEl.width = sz.w;
+            canvasEl.height = sz.h;
+            var ctx = canvasEl.getContext("2d");
+            ctx.imageSmoothingEnabled = currentMode === "wallpaper";
+            ctx.imageSmoothingQuality = "high";
+            ctx.drawImage(offscreenCanvas, 0, 0, sz.w, sz.h);
         }, 150);
     });
 
@@ -496,14 +467,13 @@
         tcInput.value = settToTCString(currentTokens);
         sizeEl.value = currentSize;
         sizeLabel.textContent = currentSize;
-
         setLoading(true);
         setTimeout(function () {
             doRender();
             updateUI(currentTokens);
             renderHistory(0);
             setLoading(false);
-        }, 100);
+        }, 10);
     } else {
         generate();
     }
