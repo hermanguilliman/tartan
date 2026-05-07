@@ -1,0 +1,44 @@
+{
+    "name": "Tartan Generator",
+    "short_name": "Tartan",
+    "description": "Создавай уникальные шотландские узоры и обои для любых устройств",
+    "start_url": "./",
+    "scope": "./",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#0d0e16",
+    "theme_color": "#0d0e16",
+    "categories": ["design", "utilities"],
+    "icons": [
+        {
+            "src": "assets/icon.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "assets/favicon-light-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "assets/favicon-light-128.png",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "assets/favicon-dark-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "assets/favicon-dark-128.png",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

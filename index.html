@@ -4,14 +4,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tartan Generator</title>
+    <title>Генератор тарта&#769на</title>
+    <meta name="description" content="Создавай уникальные шотландские узоры и обои для любых устройств">
+    <meta name="theme-color" content="#0d0e16">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tartan">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-light-32.png"
+        media="(prefers-color-scheme: light)">
+    <link rel="icon" type="image/png" sizes="128x128" href="assets/favicon-light-128.png"
+        media="(prefers-color-scheme: light)">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-light-192.png"
+        media="(prefers-color-scheme: light)">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-dark-32.png"
+        media="(prefers-color-scheme: dark)">
+    <link rel="icon" type="image/png" sizes="128x128" href="assets/favicon-dark-128.png"
+        media="(prefers-color-scheme: dark)">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-dark-192.png"
+        media="(prefers-color-scheme: dark)">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon-light-180.png">
+    <link rel="manifest" href="manifest.json">
+
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
 
     <header class="topbar">
-        <span class="logo">Tartan</span>
+        <span class="logo">Генератор тарта&#769на</span>
         <div class="mode-tabs">
             <button class="mode-tab active" data-mode="pattern">Узор</button>
             <button class="mode-tab" data-mode="wallpaper">Обои</button>
@@ -56,8 +77,8 @@
             </select>
 
             <div class="ctrl-label">Ткань</div>
-            <label class="ctrl-check"><input type="checkbox" id="texture" checked> Саржа 2/2</label>
-            <label class="ctrl-check"><input type="checkbox" id="warpweft"> Разные основа и уток</label>
+            <label class="ctrl-check"><input type="checkbox" id="texture" checked> Са&#769ржа 2/2</label>
+            <label class="ctrl-check"><input type="checkbox" id="warpweft"> Разные цвета основы и утки&#769</label>
             <div class="ctrl-slider" style="margin-top:6px">
                 <span class="slider-name">Плотность</span>
                 <input type="range" id="density" min="0.5" max="5" step="0.5" value="1">
@@ -111,7 +132,7 @@
                         <span class="pn">QHD</span><span class="ps">1440 × 3200</span>
                     </button>
                     <button class="preset-btn" data-w="1080" data-h="2340">
-                        <span class="pn">Pixel/Samsung</span><span class="ps">1080 × 2340</span>
+                        <span class="pn">Pixel / Samsung</span><span class="ps">1080 × 2340</span>
                     </button>
                     <button class="preset-btn" data-w="720" data-h="1600">
                         <span class="pn">Budget</span><span class="ps">720 × 1600</span>
@@ -198,6 +219,12 @@
     <script src="js/generator.js"></script>
     <script src="js/renderer.js"></script>
     <script src="js/ui.js"></script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js');
+        }
+    </script>
 
 </body>
 

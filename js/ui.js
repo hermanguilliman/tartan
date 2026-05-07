@@ -137,12 +137,72 @@
         return { w: Math.max(80, pw), h: Math.max(80, ph) };
     }
 
+    
+    function drawSmooth(src, dstCanvas) {
+        var sw = src.width;
+        var sh = src.height;
+        var dw = dstCanvas.width;
+        var dh = dstCanvas.height;
+
+        if (sw === dw && sh === dh) {
+            dstCanvas.getContext("2d").drawImage(src, 0, 0);
+            return;
+        }
+
+        var srcCtx = src.getContext("2d");
+        var srcData = srcCtx.getImageData(0, 0, sw, sh).data;
+
+        var dstCtx = dstCanvas.getContext("2d");
+        var dstImg = dstCtx.createImageData(dw, dh);
+        var dstData = dstImg.data;
+
+        var xRatio = sw / dw;
+        var yRatio = sh / dh;
+
+        for (var dy = 0; dy < dh; dy++) {
+            var sy1 = Math.floor(dy * yRatio);
+            var sy2 = Math.floor((dy + 1) * yRatio);
+            if (sy2 >= sh) sy2 = sh - 1;
+
+            for (var dx = 0; dx < dw; dx++) {
+                var sx1 = Math.floor(dx * xRatio);
+                var sx2 = Math.floor((dx + 1) * xRatio);
+                if (sx2 >= sw) sx2 = sw - 1;
+
+                var r = 0,
+                    g = 0,
+                    b = 0,
+                    count = 0;
+
+                for (var y = sy1; y <= sy2; y++) {
+                    var rowOffset = y * sw;
+                    for (var x = sx1; x <= sx2; x++) {
+                        var idx = (rowOffset + x) * 4;
+                        r += srcData[idx];
+                        g += srcData[idx + 1];
+                        b += srcData[idx + 2];
+                        count++;
+                    }
+                }
+
+                var dIdx = (dy * dw + dx) * 4;
+                dstData[dIdx] = (r / count + 0.5) | 0;
+                dstData[dIdx + 1] = (g / count + 0.5) | 0;
+                dstData[dIdx + 2] = (b / count + 0.5) | 0;
+                dstData[dIdx + 3] = 255;
+            }
+        }
+
+        dstCtx.putImageData(dstImg, 0, 0);
+    }
+
     function doRender() {
         if (!currentTokens || !cachedWarp) return;
 
         var density = parseFloat(densityEl.value) || 1;
         var full = getFullResolution();
 
+        /* Полный рендер для скачивания */
         offscreenCanvas = document.createElement("canvas");
         offscreenCanvas.width = full.w;
         offscreenCanvas.height = full.h;
@@ -168,6 +228,7 @@
             );
         }
 
+        /* Превью с попиксельным усреднением */
         var sz = calcPreviewSize();
         canvasEl.width = sz.w;
         canvasEl.height = sz.h;
@@ -178,15 +239,9 @@
             containerEl.classList.add(
                 ratio < 1 ? "device-phone" : "device-desktop",
             );
-            canvasEl.style.imageRendering = "auto";
-        } else {
-            canvasEl.style.imageRendering = "pixelated";
         }
 
-        var ctx = canvasEl.getContext("2d");
-        ctx.imageSmoothingEnabled = currentMode === "wallpaper";
-        ctx.imageSmoothingQuality = "high";
-        ctx.drawImage(offscreenCanvas, 0, 0, sz.w, sz.h);
+        drawSmooth(offscreenCanvas, canvasEl);
     }
 
     function renderNow() {
@@ -466,10 +521,7 @@
             var sz = calcPreviewSize();
             canvasEl.width = sz.w;
             canvasEl.height = sz.h;
-            var ctx = canvasEl.getContext("2d");
-            ctx.imageSmoothingEnabled = currentMode === "wallpaper";
-            ctx.imageSmoothingQuality = "high";
-            ctx.drawImage(offscreenCanvas, 0, 0, sz.w, sz.h);
+            drawSmooth(offscreenCanvas, canvasEl);
         }, 150);
     });
 
