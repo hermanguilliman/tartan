@@ -16,10 +16,13 @@ function drawTartan(canvas, warpPattern, weftPattern, useTexture, options) {
         ) || 1;
     var scale = baseScale;
 
+    /* Постоянное смешивание — цвета не меняются при изменении плотности */
+    var mixTop = 0.88;
+    var mixBot = 0.12;
+
+    /* Текстура применяется только когда нити достаточно крупные */
     var effectivePxPerThread = scale / density;
-    var crispMode = effectivePxPerThread < 4;
-    var mixTop = crispMode ? 1.0 : 0.88;
-    var mixBot = crispMode ? 0.0 : 0.12;
+    var useBump = useTexture && effectivePxPerThread > 2.5;
 
     for (var py = 0; py < h; py++) {
         for (var px = 0; px < w; px++) {
@@ -45,7 +48,7 @@ function drawTartan(canvas, warpPattern, weftPattern, useTexture, options) {
                 b = weftColor[2] * mixTop + warpColor[2] * mixBot;
             }
 
-            if (useTexture && !crispMode) {
+            if (useBump) {
                 var threadX = ((px * density) / scale) % 1;
                 var threadY = ((py * density) / scale) % 1;
                 var bump = warpOnTop

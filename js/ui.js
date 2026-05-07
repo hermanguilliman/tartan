@@ -22,8 +22,8 @@
     var dlBtn = document.getElementById("downloadBtn");
 
     var currentMode = "pattern";
-    var wpPresetW = 1179;
-    var wpPresetH = 2556;
+    var wpPresetW = 1920;
+    var wpPresetH = 1080;
     var wpStyle = "fill";
 
     var currentTokens = null;
@@ -31,7 +31,9 @@
     var currentSize = 768;
     var HIST_MAX = 12;
 
-    /* Offscreen-канвас с полноразмерным рендером */
+    var cachedWarp = null;
+    var cachedWeft = null;
+
     var offscreenCanvas = null;
     var renderTimer = null;
 
@@ -81,7 +83,8 @@
         clanName.textContent = pick(CLANS).name;
     }
 
-    function buildPatterns() {
+    function rebuildPatterns() {
+        if (!currentTokens) return;
         var pattern = buildPatternFromTokens(currentTokens, currentHistorical);
         var weftPattern = pattern;
         if (warpweftEl.checked) {
@@ -92,7 +95,8 @@
                 .slice(offset)
                 .concat(pattern.slice(0, offset));
         }
-        return { warp: pattern, weft: weftPattern };
+        cachedWarp = pattern;
+        cachedWeft = weftPattern;
     }
 
     function getFullResolution() {
@@ -134,29 +138,36 @@
     }
 
     function doRender() {
-        if (!currentTokens) return;
+        if (!currentTokens || !cachedWarp) return;
 
-        var p = buildPatterns();
         var density = parseFloat(densityEl.value) || 1;
         var full = getFullResolution();
 
-        /* Полный рендер */
         offscreenCanvas = document.createElement("canvas");
         offscreenCanvas.width = full.w;
         offscreenCanvas.height = full.h;
 
         if (currentMode === "pattern") {
-            drawTartan(offscreenCanvas, p.warp, p.weft, textureEl.checked, {
-                pixelScale: density,
-            });
+            drawTartan(
+                offscreenCanvas,
+                cachedWarp,
+                cachedWeft,
+                textureEl.checked,
+                { pixelScale: density },
+            );
         } else {
-            drawWallpaper(offscreenCanvas, p.warp, p.weft, textureEl.checked, {
-                mode: wpStyle,
-                pixelScale: density,
-            });
+            drawWallpaper(
+                offscreenCanvas,
+                cachedWarp,
+                cachedWeft,
+                textureEl.checked,
+                {
+                    mode: wpStyle,
+                    pixelScale: density,
+                },
+            );
         }
 
-        /* Масштабирование в превью */
         var sz = calcPreviewSize();
         canvasEl.width = sz.w;
         canvasEl.height = sz.h;
@@ -178,7 +189,6 @@
         ctx.drawImage(offscreenCanvas, 0, 0, sz.w, sz.h);
     }
 
-    /** Рендер с индикатором загрузки */
     function renderNow() {
         setLoading(true);
         setTimeout(function () {
@@ -187,7 +197,6 @@
         }, 10);
     }
 
-    /** Рендер с задержкой (для слайдеров) — без индикатора */
     function renderDebounced() {
         clearTimeout(renderTimer);
         renderTimer = setTimeout(function () {
@@ -215,6 +224,8 @@
         tcInput.value = settToTCString(result.tokens);
         tcError.classList.remove("show");
 
+        rebuildPatterns();
+
         setLoading(true);
         setTimeout(function () {
             doRender();
@@ -236,6 +247,8 @@
 
         currentTokens = tokens;
         currentHistorical = toneEl.value === "historical";
+
+        rebuildPatterns();
 
         setLoading(true);
         setTimeout(function () {
@@ -299,6 +312,8 @@
                 sizeEl.value = entry.size;
                 sizeLabel.textContent = entry.size;
                 tcInput.value = settToTCString(entry.tokens);
+
+                rebuildPatterns();
 
                 setLoading(true);
                 setTimeout(function () {
@@ -370,7 +385,9 @@
     textureEl.addEventListener("change", function () {
         renderNow();
     });
+
     warpweftEl.addEventListener("change", function () {
+        rebuildPatterns();
         renderNow();
     });
 
@@ -412,11 +429,10 @@
         generate();
     });
 
-    /* ─── Скачивание — используем готовый offscreen-канвас ─── */
+    /* ─── Скачивание ─── */
     dlBtn.addEventListener("click", function () {
         if (!currentTokens) return;
 
-        /* Если offscreen ещё не создан — рендерим синхронно */
         if (!offscreenCanvas) {
             doRender();
         }
@@ -447,7 +463,6 @@
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(function () {
             if (!currentTokens || !offscreenCanvas) return;
-            /* Только обновляем превью, без повторного полного рендера */
             var sz = calcPreviewSize();
             canvasEl.width = sz.w;
             canvasEl.height = sz.h;
@@ -467,6 +482,9 @@
         tcInput.value = settToTCString(currentTokens);
         sizeEl.value = currentSize;
         sizeLabel.textContent = currentSize;
+
+        rebuildPatterns();
+
         setLoading(true);
         setTimeout(function () {
             doRender();

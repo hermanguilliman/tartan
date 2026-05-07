@@ -57,7 +57,7 @@
 
             <div class="ctrl-label">Ткань</div>
             <label class="ctrl-check"><input type="checkbox" id="texture" checked> Саржа 2/2</label>
-            <label class="ctrl-check"><input type="checkbox" id="warpweft"> Разные основа и утка</label>
+            <label class="ctrl-check"><input type="checkbox" id="warpweft"> Разные основа и уток</label>
             <div class="ctrl-slider" style="margin-top:6px">
                 <span class="slider-name">Плотность</span>
                 <input type="range" id="density" min="0.5" max="5" step="0.5" value="1">
@@ -76,21 +76,14 @@
 
             <div id="wallpaperControls" style="display:none">
                 <div class="ctrl-label">Устройство</div>
+
+                <div class="preset-group-label">PC</div>
                 <div class="preset-grid">
-                    <button class="preset-btn active" data-w="1179" data-h="2556">
-                        <span class="pn">iPhone 15</span><span class="ps">1179 × 2556</span>
-                    </button>
-                    <button class="preset-btn" data-w="1290" data-h="2796">
-                        <span class="pn">Pro Max</span><span class="ps">1290 × 2796</span>
-                    </button>
-                    <button class="preset-btn" data-w="1080" data-h="2400">
-                        <span class="pn">Android</span><span class="ps">1080 × 2400</span>
-                    </button>
-                    <button class="preset-btn" data-w="1440" data-h="3200">
-                        <span class="pn">Android QHD</span><span class="ps">1440 × 3200</span>
-                    </button>
-                    <button class="preset-btn" data-w="1920" data-h="1080">
+                    <button class="preset-btn active" data-w="1920" data-h="1080">
                         <span class="pn">Full HD</span><span class="ps">1920 × 1080</span>
+                    </button>
+                    <button class="preset-btn" data-w="1920" data-h="1200">
+                        <span class="pn">WUXGA</span><span class="ps">1920 × 1200</span>
                     </button>
                     <button class="preset-btn" data-w="2560" data-h="1440">
                         <span class="pn">QHD</span><span class="ps">2560 × 1440</span>
@@ -100,6 +93,50 @@
                     </button>
                     <button class="preset-btn" data-w="3440" data-h="1440">
                         <span class="pn">Ultrawide</span><span class="ps">3440 × 1440</span>
+                    </button>
+                    <button class="preset-btn" data-w="2560" data-h="1080">
+                        <span class="pn">UW Full HD</span><span class="ps">2560 × 1080</span>
+                    </button>
+                    <button class="preset-btn" data-w="1366" data-h="768">
+                        <span class="pn">HD Laptop</span><span class="ps">1366 × 768</span>
+                    </button>
+                </div>
+
+                <div class="preset-group-label">Android</div>
+                <div class="preset-grid">
+                    <button class="preset-btn" data-w="1080" data-h="2400">
+                        <span class="pn">Standard</span><span class="ps">1080 × 2400</span>
+                    </button>
+                    <button class="preset-btn" data-w="1440" data-h="3200">
+                        <span class="pn">QHD</span><span class="ps">1440 × 3200</span>
+                    </button>
+                    <button class="preset-btn" data-w="1080" data-h="2340">
+                        <span class="pn">Pixel/Samsung</span><span class="ps">1080 × 2340</span>
+                    </button>
+                    <button class="preset-btn" data-w="720" data-h="1600">
+                        <span class="pn">Budget</span><span class="ps">720 × 1600</span>
+                    </button>
+                </div>
+
+                <div class="preset-group-label">iOS</div>
+                <div class="preset-grid">
+                    <button class="preset-btn" data-w="1179" data-h="2556">
+                        <span class="pn">iPhone 15 / 16</span><span class="ps">1179 × 2556</span>
+                    </button>
+                    <button class="preset-btn" data-w="1290" data-h="2796">
+                        <span class="pn">Pro Max</span><span class="ps">1290 × 2796</span>
+                    </button>
+                    <button class="preset-btn" data-w="1170" data-h="2532">
+                        <span class="pn">14 / 13 Pro</span><span class="ps">1170 × 2532</span>
+                    </button>
+                    <button class="preset-btn" data-w="1284" data-h="2778">
+                        <span class="pn">Plus / Pro Max</span><span class="ps">1284 × 2778</span>
+                    </button>
+                    <button class="preset-btn" data-w="1080" data-h="2340">
+                        <span class="pn">13 / mini</span><span class="ps">1080 × 2340</span>
+                    </button>
+                    <button class="preset-btn" data-w="828" data-h="1792">
+                        <span class="pn">11 / XR</span><span class="ps">828 × 1792</span>
                     </button>
                 </div>
 
@@ -128,7 +165,7 @@
                 </div>
             </div>
             <div id="wallpaperExport" style="display:none">
-                <div class="wp-size-info" id="wpSizeInfo">1179 × 2556</div>
+                <div class="wp-size-info" id="wpSizeInfo">1920 × 1080</div>
             </div>
 
             <div class="ctrl-actions">
