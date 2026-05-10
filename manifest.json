@@ -1,7 +1,9 @@
 {
-    "name": "Tartan Generator",
-    "short_name": "Tartan",
-    "description": "Создавай уникальные шотландские узоры и обои для любых устройств",
+    "name": "Генератор тартана",
+    "short_name": "Тартан",
+    "description": "Создавайте аутентичные шотландские тартаны и обои для любых устройств онлайн — бесплатно.",
+    "lang": "ru",
+    "dir": "ltr",
     "start_url": "./",
     "scope": "./",
     "display": "standalone",
@@ -9,6 +11,22 @@
     "background_color": "#0d0e16",
     "theme_color": "#0d0e16",
     "categories": ["design", "utilities"],
+    "screenshots": [
+        {
+            "src": "assets/screenshot-wide.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Генератор тартана на десктопе"
+        },
+        {
+            "src": "assets/screenshot-narrow.png",
+            "sizes": "390x844",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Генератор тартана на смартфоне"
+        }
+    ],
     "icons": [
         {
             "src": "assets/icon.png",
