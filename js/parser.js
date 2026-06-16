@@ -28,9 +28,9 @@ function parseThreadCount(str) {
 }
 
 /** Строим развёрнутый паттерн из токенов (симметричный тартан) */
-function buildPatternFromTokens(tokens, historical) {
+function buildPatternFromTokens(tokens, paletteMap) {
     function getColorForToken(t) {
-        return historical ? historicize(getColor(t.code)) : getColor(t.code);
+        return paletteMap[t.code] || [128, 128, 128];
     }
 
     function expand(toks) {
@@ -60,7 +60,6 @@ function buildPatternFromTokens(tokens, historical) {
     }
 }
 
-/** Thread count → строка для отображения */
 function settToTCString(sett) {
     return sett
         .map(function (t) {

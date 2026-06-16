@@ -41,3 +41,16 @@ function getAverageColor(pattern) {
     }
     return [Math.round(r / len), Math.round(g / len), Math.round(b / len)];
 }
+
+function generateTartanPalette(tokens, historical) {
+    var map = {};
+    tokens.forEach(function (t) {
+        if (map[t.code]) return;
+        var baseColor = getColor(t.code, 5);
+        if (historical) {
+            baseColor = historicize(baseColor);
+        }
+        map[t.code] = baseColor;
+    });
+    return map;
+}

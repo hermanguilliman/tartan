@@ -16,11 +16,9 @@ function drawTartan(canvas, warpPattern, weftPattern, useTexture, options) {
         ) || 1;
     var scale = baseScale;
 
-    /* Постоянное смешивание — цвета не меняются при изменении плотности */
     var mixTop = 0.88;
     var mixBot = 0.12;
 
-    /* Текстура применяется только когда нити достаточно крупные */
     var effectivePxPerThread = scale / density;
     var useBump = useTexture && effectivePxPerThread > 2.5;
 
@@ -51,15 +49,29 @@ function drawTartan(canvas, warpPattern, weftPattern, useTexture, options) {
             if (useBump) {
                 var threadX = ((px * density) / scale) % 1;
                 var threadY = ((py * density) / scale) % 1;
+
+                var edgeShadow = 1.0;
+                var edgeDist = warpOnTop
+                    ? Math.min(threadX, 1.0 - threadX)
+                    : Math.min(threadY, 1.0 - threadY);
+                if (edgeDist < 0.15) {
+                    edgeShadow = 0.8 + (edgeDist / 0.15) * 0.2;
+                }
+
                 var bump = warpOnTop
-                    ? Math.sin(threadX * Math.PI) * 14 - 4
-                    : Math.sin(threadY * Math.PI) * 14 - 4;
+                    ? Math.sin(threadX * Math.PI) * 15 - 4
+                    : Math.sin(threadY * Math.PI) * 15 - 4;
+
+                var fiberAngle = warpOnTop
+                    ? Math.sin((px * 0.8 + py * 0.4) * (Math.PI / 2))
+                    : Math.sin((px * 0.4 - py * 0.8) * (Math.PI / 2));
+
                 var fiber =
-                    Math.sin(px * 0.7 + py * 0.3) * 3 +
-                    Math.sin(px * 1.3 - py * 0.8) * 2;
-                r = clamp(r + bump + fiber);
-                g = clamp(g + bump + fiber);
-                b = clamp(b + bump + fiber);
+                    fiberAngle * 3.5 + Math.sin(px * 1.5 - py * 1.5) * 1.5;
+
+                r = clamp(r * edgeShadow + bump + fiber);
+                g = clamp(g * edgeShadow + bump + fiber);
+                b = clamp(b * edgeShadow + bump + fiber);
             }
 
             var i = (py * w + px) * 4;
@@ -81,28 +93,17 @@ function drawWallpaper(canvas, warpPattern, weftPattern, useTexture, options) {
     var ctx = canvas.getContext("2d");
     var mode = options.mode || "fill";
     var density = options.pixelScale || 1;
+    var vignetteVal =
+        options.vignette !== undefined ? parseFloat(options.vignette) : 0.4;
     var avg = getAverageColor(warpPattern);
 
     ctx.clearRect(0, 0, w, h);
 
-    if (mode === "tile") {
-        var baseTileSize = Math.round(Math.min(w, h) / 4);
-        var tileSize = Math.max(32, Math.round(baseTileSize / density));
+    drawTartan(canvas, warpPattern, weftPattern, useTexture, {
+        pixelScale: density,
+    });
 
-        var tile = document.createElement("canvas");
-        tile.width = tile.height = tileSize;
-        drawTartan(tile, warpPattern, weftPattern, useTexture, {
-            pixelScale: 1,
-        });
-
-        var pat = ctx.createPattern(tile, "repeat");
-        ctx.fillStyle = pat;
-        ctx.fillRect(0, 0, w, h);
-    } else if (mode === "gradient") {
-        drawTartan(canvas, warpPattern, weftPattern, useTexture, {
-            pixelScale: density,
-        });
-
+    if (mode === "gradient") {
         var darkC = [
             Math.round(avg[0] * 0.04),
             Math.round(avg[1] * 0.04),
@@ -132,10 +133,21 @@ function drawWallpaper(canvas, warpPattern, weftPattern, useTexture, options) {
         );
         ctx.fillStyle = botG;
         ctx.fillRect(0, h * 0.62, w, h * 0.38);
-    } else {
-        drawTartan(canvas, warpPattern, weftPattern, useTexture, {
-            pixelScale: density,
-        });
+    }
+
+    if (vignetteVal > 0) {
+        var radG = ctx.createRadialGradient(
+            w / 2,
+            h / 2,
+            Math.min(w, h) * 0.25,
+            w / 2,
+            h / 2,
+            Math.max(w, h) * 0.8,
+        );
+        radG.addColorStop(0, "rgba(0, 0, 0, 0)");
+        radG.addColorStop(1, "rgba(0, 0, 0, " + vignetteVal * 0.75 + ")");
+        ctx.fillStyle = radG;
+        ctx.fillRect(0, 0, w, h);
     }
 }
 

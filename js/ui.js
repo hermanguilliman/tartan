@@ -11,6 +11,10 @@
     var warpweftEl = document.getElementById("warpweft");
     var densityEl = document.getElementById("density");
     var densityLabel = document.getElementById("densityLabel");
+
+    var vignetteEl = document.getElementById("vignette");
+    var vignetteLabel = document.getElementById("vignetteLabel");
+
     var sizeEl = document.getElementById("size");
     var sizeLabel = document.getElementById("sizeLabel");
     var tcInput = document.getElementById("tcInput");
@@ -33,6 +37,7 @@
 
     var cachedWarp = null;
     var cachedWeft = null;
+    var currentPaletteMap = null;
 
     var offscreenCanvas = null;
     var renderTimer = null;
@@ -67,7 +72,10 @@
         tokens.forEach(function (t) {
             if (seen[t.code]) return;
             seen[t.code] = true;
-            var col = pick(PALETTE[t.code] || [[128, 128, 128]]);
+
+            var col =
+                (currentPaletteMap && currentPaletteMap[t.code]) ||
+                getColor(t.code, 0);
             var sw = document.createElement("div");
             sw.className = "swatch";
             sw.style.background =
@@ -76,7 +84,9 @@
         });
 
         var firstCode = tokens[0].code;
-        var firstCol = pick(PALETTE[firstCode] || [[128, 128, 128]]);
+        var firstCol =
+            (currentPaletteMap && currentPaletteMap[firstCode]) ||
+            getColor(firstCode, 0);
         colorDot.style.background =
             "rgb(" + firstCol[0] + "," + firstCol[1] + "," + firstCol[2] + ")";
 
@@ -85,7 +95,13 @@
 
     function rebuildPatterns() {
         if (!currentTokens) return;
-        var pattern = buildPatternFromTokens(currentTokens, currentHistorical);
+
+        currentPaletteMap = generateTartanPalette(
+            currentTokens,
+            currentHistorical,
+        );
+
+        var pattern = buildPatternFromTokens(currentTokens, currentPaletteMap);
         var weftPattern = pattern;
         if (warpweftEl.checked) {
             var offset = Math.floor(
@@ -137,7 +153,6 @@
         return { w: Math.max(80, pw), h: Math.max(80, ph) };
     }
 
-    
     function drawSmooth(src, dstCanvas) {
         var sw = src.width;
         var sh = src.height;
@@ -202,7 +217,6 @@
         var density = parseFloat(densityEl.value) || 1;
         var full = getFullResolution();
 
-        /* Полный рендер для скачивания */
         offscreenCanvas = document.createElement("canvas");
         offscreenCanvas.width = full.w;
         offscreenCanvas.height = full.h;
@@ -224,11 +238,11 @@
                 {
                     mode: wpStyle,
                     pixelScale: density,
+                    vignette: vignetteEl ? parseFloat(vignetteEl.value) : 0.4,
                 },
             );
         }
 
-        /* Превью с попиксельным усреднением */
         var sz = calcPreviewSize();
         canvasEl.width = sz.w;
         canvasEl.height = sz.h;
@@ -261,7 +275,6 @@
         }, 200);
     }
 
-    /* ─── Генерация ─── */
     function generate() {
         currentSize = parseInt(sizeEl.value);
         sizeLabel.textContent = currentSize;
@@ -314,12 +327,13 @@
         }, 10);
     }
 
-    /* ─── История ─── */
     function makeThumbnail(tokens, historical) {
         var S = 80;
         var mini = document.createElement("canvas");
         mini.width = mini.height = S;
-        var pattern = buildPatternFromTokens(tokens, historical);
+
+        var miniPalette = generateTartanPalette(tokens, historical);
+        var pattern = buildPatternFromTokens(tokens, miniPalette);
         drawTartan(mini, pattern, pattern, false, { pixelScale: 1 });
         return mini.toDataURL();
     }
@@ -383,7 +397,6 @@
         });
     }
 
-    /* ─── Табы ─── */
     document.querySelectorAll(".mode-tab").forEach(function (tab) {
         tab.addEventListener("click", function () {
             switchMode(this.dataset.mode);
@@ -409,7 +422,6 @@
         renderNow();
     }
 
-    /* ─── Пресеты ─── */
     document.querySelectorAll(".preset-btn").forEach(function (btn) {
         btn.addEventListener("click", function () {
             document.querySelectorAll(".preset-btn").forEach(function (b) {
@@ -424,7 +436,6 @@
         });
     });
 
-    /* ─── Стили ─── */
     document.querySelectorAll(".style-btn").forEach(function (btn) {
         btn.addEventListener("click", function () {
             document.querySelectorAll(".style-btn").forEach(function (b) {
@@ -436,7 +447,6 @@
         });
     });
 
-    /* ─── Параметры ─── */
     textureEl.addEventListener("change", function () {
         renderNow();
     });
@@ -450,6 +460,13 @@
         densityLabel.textContent = this.value + "x";
         renderDebounced();
     });
+
+    if (vignetteEl) {
+        vignetteEl.addEventListener("input", function () {
+            vignetteLabel.textContent = Math.round(this.value * 100) + "%";
+            renderDebounced();
+        });
+    }
 
     sizeEl.addEventListener("input", function () {
         currentSize = parseInt(sizeEl.value);
@@ -481,10 +498,14 @@
         );
         textureEl.checked = Math.random() > 0.25;
         warpweftEl.checked = Math.random() > 0.85;
+        if (vignetteEl) {
+            vignetteEl.value = rand(0.1, 0.7).toFixed(1);
+            vignetteLabel.textContent =
+                Math.round(vignetteEl.value * 100) + "%";
+        }
         generate();
     });
 
-    /* ─── Скачивание ─── */
     dlBtn.addEventListener("click", function () {
         if (!currentTokens) return;
 
@@ -512,7 +533,6 @@
         a.click();
     });
 
-    /* ─── Resize ─── */
     var resizeTimer;
     window.addEventListener("resize", function () {
         clearTimeout(resizeTimer);
@@ -525,7 +545,6 @@
         }, 150);
     });
 
-    /* ─── Инициализация ─── */
     if (history.length > 0) {
         var last = history[0];
         currentTokens = last.tokens;
