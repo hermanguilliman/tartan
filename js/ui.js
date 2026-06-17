@@ -26,6 +26,11 @@
     var clanName = document.getElementById("clanName");
     var dlBtn = document.getElementById("downloadBtn");
 
+    var stripBuilderList = document.getElementById("stripBuilderList");
+    var addStripBtn = document.getElementById("addStripBtn");
+    var toggleFormulaBtn = document.getElementById("toggleFormulaBtn");
+    var formulaContainer = document.getElementById("formulaContainer");
+
     var currentMode = "pattern";
     var wpPresetW = 1920;
     var wpPresetH = 1080;
@@ -99,7 +104,262 @@
             clanName.textContent = "Индивидуальный узор";
             clanName.style.color = "var(--muted)";
         }
+
+        syncBuilderFromTokens(tokens);
     }
+
+    function syncBuilderFromTokens(tokens) {
+        if (!stripBuilderList) return;
+        stripBuilderList.innerHTML = "";
+
+        tokens.forEach(function (token, idx) {
+            var item = createStripItem(token, idx);
+            stripBuilderList.appendChild(item);
+        });
+    }
+
+    function createStripItem(token, idx) {
+        var div = document.createElement("div");
+        div.className = "strip-item";
+        div.dataset.index = idx;
+
+        var col = getColor(token.code, 0);
+        var colorBtn = document.createElement("button");
+        colorBtn.className = "color-picker-trigger";
+        colorBtn.style.background =
+            "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
+        colorBtn.title = "Изменить цвет (" + token.code + ")";
+
+        colorBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            closeAllPopovers();
+            openColorPopover(colorBtn, token.code, function (newCode) {
+                token.code = newCode;
+                rebuildFromBuilder();
+                updateUI(currentTokens);
+            });
+        });
+
+        var sizeCtrl = document.createElement("div");
+        sizeCtrl.className = "strip-size-ctrl";
+
+        var btnMinus = document.createElement("button");
+        btnMinus.className = "strip-size-btn";
+        btnMinus.textContent = "−";
+        btnMinus.type = "button";
+        btnMinus.addEventListener("click", function () {
+            token.count = Math.max(1, token.count - (token.count > 10 ? 4 : 2));
+            sizeInput.value = token.count;
+            rebuildFromBuilder();
+        });
+
+        var sizeInput = document.createElement("input");
+        sizeInput.className = "strip-size-input";
+        sizeInput.type = "text";
+        sizeInput.value = token.count;
+        sizeInput.addEventListener("change", function () {
+            var val = parseInt(this.value) || 2;
+            token.count = Math.max(1, val);
+            this.value = token.count;
+            rebuildFromBuilder();
+        });
+
+        var btnPlus = document.createElement("button");
+        btnPlus.className = "strip-size-btn";
+        btnPlus.textContent = "+";
+        btnPlus.type = "button";
+        btnPlus.addEventListener("click", function () {
+            token.count = token.count + (token.count >= 10 ? 4 : 2);
+            sizeInput.value = token.count;
+            rebuildFromBuilder();
+        });
+
+        sizeCtrl.appendChild(btnMinus);
+        sizeCtrl.appendChild(sizeInput);
+        sizeCtrl.appendChild(btnPlus);
+
+        var pivotBtn = document.createElement("div");
+        pivotBtn.className = "pivot-toggle" + (token.pivot ? " active" : "");
+        pivotBtn.textContent = "/ Якорь";
+        pivotBtn.title = "Определяет точку зеркального отражения";
+        pivotBtn.addEventListener("click", function () {
+            token.pivot = !token.pivot;
+            pivotBtn.classList.toggle("active", token.pivot);
+            rebuildFromBuilder();
+        });
+
+        var removeBtn = document.createElement("button");
+        removeBtn.className = "strip-remove-btn";
+        removeBtn.innerHTML =
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+        removeBtn.title = "Удалить нить";
+        removeBtn.addEventListener("click", function () {
+            currentTokens.splice(idx, 1);
+            if (currentTokens.length === 0) {
+                currentTokens = [{ code: "B", count: 24, pivot: true }];
+            }
+            rebuildFromBuilder();
+            updateUI(currentTokens);
+        });
+
+        div.appendChild(colorBtn);
+        div.appendChild(sizeCtrl);
+        div.appendChild(pivotBtn);
+        div.appendChild(removeBtn);
+
+        return div;
+    }
+
+    function closeAllPopovers() {
+        document.querySelectorAll(".color-popover").forEach(function (el) {
+            el.remove();
+        });
+    }
+
+    document.addEventListener("click", function () {
+        closeAllPopovers();
+    });
+
+    function openColorPopover(triggerEl, activeCode, onSelect) {
+        var popover = document.createElement("div");
+        popover.className = "color-popover";
+
+        popover.addEventListener("click", function (e) {
+            e.stopPropagation();
+        });
+
+        Object.keys(PALETTE).forEach(function (key) {
+            var colorValues = PALETTE[key];
+            var col = colorValues[0];
+
+            var swatch = document.createElement("div");
+            swatch.className = "color-popover-swatch";
+            swatch.style.background =
+                "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
+            swatch.title = key + " (" + getFriendlyColorName(key) + ")";
+
+            if (key === activeCode) {
+                swatch.style.borderColor = "var(--accent)";
+                swatch.style.boxShadow = "0 0 5px var(--accent)";
+            }
+
+            swatch.addEventListener("click", function (e) {
+                e.stopPropagation();
+                onSelect(key);
+                popover.remove();
+            });
+
+            popover.appendChild(swatch);
+        });
+
+        document.body.appendChild(popover);
+
+        var rect = triggerEl.getBoundingClientRect();
+        var popoverWidth = 220;
+        var popoverHeight = 180;
+
+        var top = rect.bottom + 6;
+        var left = rect.left;
+
+        if (top + popoverHeight > window.innerHeight) {
+            top = rect.top - popoverHeight - 6;
+        }
+
+        if (left + popoverWidth > window.innerWidth) {
+            left = window.innerWidth - popoverWidth - 16;
+        }
+
+        if (left < 16) {
+            left = 16;
+        }
+
+        popover.style.top = top + "px";
+        popover.style.left = left + "px";
+    }
+
+    function getFriendlyColorName(code) {
+        var names = {
+            B: "Синий",
+            LB: "Светло-синий",
+            DB: "Темно-синий",
+            G: "Зеленый",
+            LG: "Светло-зеленый",
+            DG: "Темно-зеленый",
+            K: "Черный",
+            N: "Серый",
+            LN: "Светло-серый",
+            R: "Красный",
+            DR: "Темно-красный",
+            LR: "Светло-красный",
+            T: "Коричневый",
+            DT: "Темно-коричневый",
+            LT: "Светло-коричневый",
+            P: "Фиолетовый",
+            LP: "Светло-фиолетовый",
+            Y: "Желтый",
+            LY: "Светло-желтый",
+            W: "Белый",
+            O: "Оранжевый",
+            LO: "Светло-оранжевый",
+            C: "Малиновый",
+            DC: "Темно-малиновый",
+            LC: "Светло-малиновый",
+            M: "Пурпурный",
+            DM: "Темно-пурпурный",
+            LM: "Светло-пурпурный",
+            E: "Бирюзовый",
+            DE: "Темно-бирюзовый",
+            LE: "Светло-бирюзовый",
+            I: "Индиго",
+            DI: "Темно-индиго",
+            LI: "Светло-индиго",
+            S: "Сланцевый",
+            DS: "Темно-сланцевый",
+            LS: "Светло-сланцевый",
+        };
+        return names[code] || code;
+    }
+
+    function rebuildFromBuilder() {
+        tcInput.value = settToTCString(currentTokens);
+        rebuildPatterns();
+        renderNow();
+
+        tcDisplay.textContent = tcInput.value;
+        var matchedName = findClanByTokens(currentTokens);
+        if (matchedName) {
+            clanName.textContent = matchedName;
+            clanName.style.color = "var(--accent2)";
+        } else {
+            clanName.textContent = "Индивидуальный узор";
+            clanName.style.color = "var(--muted)";
+        }
+    }
+
+    addStripBtn.addEventListener("click", function () {
+        var lastToken = currentTokens[currentTokens.length - 1] || {
+            code: "B",
+            count: 24,
+            pivot: false,
+        };
+        currentTokens.push({
+            code: lastToken.code,
+            count: lastToken.count,
+            pivot: false,
+        });
+        rebuildFromBuilder();
+        updateUI(currentTokens);
+    });
+
+    toggleFormulaBtn.addEventListener("click", function () {
+        if (formulaContainer.style.display === "none") {
+            formulaContainer.style.display = "block";
+            toggleFormulaBtn.textContent = "Скрыть формулу (Thread Count)";
+        } else {
+            formulaContainer.style.display = "none";
+            toggleFormulaBtn.textContent = "Показать формулу (Thread Count)";
+        }
+    });
 
     function rebuildPatterns() {
         if (!currentTokens) return;
