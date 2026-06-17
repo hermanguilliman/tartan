@@ -27,7 +27,6 @@ function parseThreadCount(str) {
     return tokens;
 }
 
-/** Строим развёрнутый паттерн из токенов (симметричный тартан) */
 function buildPatternFromTokens(tokens, paletteMap) {
     function getColorForToken(t) {
         return paletteMap[t.code] || [128, 128, 128];
@@ -77,13 +76,13 @@ function getGCD(a, b) {
     return a;
 }
 
-/** Приводит пропорции нитей к базовому знаменателю */
 function normalizeTokens(tokens) {
     if (!tokens || tokens.length === 0) return [];
     var gcd = tokens[0].count;
     for (var i = 1; i < tokens.length; i++) {
         gcd = getGCD(gcd, tokens[i].count);
     }
+    if (gcd < 1) gcd = 1;
     return tokens.map(function (t) {
         return {
             code: t.code.toUpperCase(),
@@ -93,7 +92,6 @@ function normalizeTokens(tokens) {
     });
 }
 
-/** Сравнивает два набора токенов (прямое совпадение или реверсивное) */
 function areTokensEqual(tokensA, tokensB) {
     if (tokensA.length !== tokensB.length) return false;
 
@@ -126,7 +124,6 @@ function areTokensEqual(tokensA, tokensB) {
     return reverseMatch;
 }
 
-/** Ищет имя клана по совпадению нитей в базе данных CLANS */
 function findClanByTokens(tokens) {
     if (!tokens || tokens.length === 0) return null;
     var normA = normalizeTokens(tokens);

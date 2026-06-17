@@ -1,3 +1,15 @@
+var fiberAngleWarpLUT = new Float32Array(40);
+var fiberAngleWeftLUT = new Float32Array(40);
+for (var i = 0; i < 40; i++) {
+    fiberAngleWarpLUT[i] = Math.sin(i * (Math.PI / 20));
+    fiberAngleWeftLUT[i] = Math.sin(i * (Math.PI / 20));
+}
+
+var sinNoiseLUT = new Float32Array(1000);
+for (var i = 0; i < 1000; i++) {
+    sinNoiseLUT[i] = Math.sin(i * 1.5) * 1.5;
+}
+
 function drawTartan(canvas, warpPattern, weftPattern, useTexture, options) {
     var w = canvas.width;
     var h = canvas.height;
@@ -8,13 +20,19 @@ function drawTartan(canvas, warpPattern, weftPattern, useTexture, options) {
     var data = img.data;
 
     var density = options && options.pixelScale ? options.pixelScale : 1;
+    var style = options && options.style ? options.style : "fill";
 
-    var baseScale =
-        Math.max(
-            1,
-            Math.floor(Math.min(w, h) / Math.max(warpLen, weftLen) / 2) * 2,
-        ) || 1;
-    var scale = baseScale;
+    var scale;
+    if (style === "tile") {
+        scale = Math.max(1, Math.round(5 / density)) || 1;
+    } else {
+        var baseScale =
+            Math.max(
+                1,
+                Math.floor(Math.min(w, h) / Math.max(warpLen, weftLen) / 2) * 2,
+            ) || 1;
+        scale = baseScale;
+    }
 
     var mixTop = 0.88;
     var mixBot = 0.12;
@@ -29,6 +47,8 @@ function drawTartan(canvas, warpPattern, weftPattern, useTexture, options) {
 
             var xi = absX % warpLen;
             var yi = absY % weftLen;
+            if (xi < 0) xi += warpLen;
+            if (yi < 0) yi += weftLen;
 
             var warpOnTop = (absX + absY) % 4 < 2;
 
@@ -49,6 +69,8 @@ function drawTartan(canvas, warpPattern, weftPattern, useTexture, options) {
             if (useBump) {
                 var threadX = ((px * density) / scale) % 1;
                 var threadY = ((py * density) / scale) % 1;
+                if (threadX < 0) threadX += 1;
+                if (threadY < 0) threadY += 1;
 
                 var edgeShadow = 1.0;
                 var edgeDist = warpOnTop
@@ -59,15 +81,23 @@ function drawTartan(canvas, warpPattern, weftPattern, useTexture, options) {
                 }
 
                 var bump = warpOnTop
-                    ? Math.sin(threadX * Math.PI) * 15 - 4
-                    : Math.sin(threadY * Math.PI) * 15 - 4;
+                    ? 60 * threadX * (1.0 - threadX) - 4
+                    : 60 * threadY * (1.0 - threadY) - 4;
 
-                var fiberAngle = warpOnTop
-                    ? Math.sin((px * 0.8 + py * 0.4) * (Math.PI / 2))
-                    : Math.sin((px * 0.4 - py * 0.8) * (Math.PI / 2));
+                var fIdx;
+                if (warpOnTop) {
+                    fIdx = (px * 8 + py * 4) % 40;
+                    if (fIdx < 0) fIdx += 40;
+                    var fiberAngle = fiberAngleWarpLUT[fIdx];
+                } else {
+                    fIdx = (px * 4 - py * 8) % 40;
+                    if (fIdx < 0) fIdx += 40;
+                    var fiberAngle = fiberAngleWeftLUT[fIdx];
+                }
 
-                var fiber =
-                    fiberAngle * 3.5 + Math.sin(px * 1.5 - py * 1.5) * 1.5;
+                var noiseIdx = (px - py) % 1000;
+                if (noiseIdx < 0) noiseIdx += 1000;
+                var fiber = fiberAngle * 3.5 + sinNoiseLUT[noiseIdx];
 
                 r = clamp(r * edgeShadow + bump + fiber);
                 g = clamp(g * edgeShadow + bump + fiber);
@@ -85,8 +115,6 @@ function drawTartan(canvas, warpPattern, weftPattern, useTexture, options) {
     ctx.putImageData(img, 0, 0);
 }
 
-/* ─── Обои ─── */
-
 function drawWallpaper(canvas, warpPattern, weftPattern, useTexture, options) {
     var w = canvas.width;
     var h = canvas.height;
@@ -101,6 +129,7 @@ function drawWallpaper(canvas, warpPattern, weftPattern, useTexture, options) {
 
     drawTartan(canvas, warpPattern, weftPattern, useTexture, {
         pixelScale: density,
+        style: mode,
     });
 
     if (mode === "gradient") {

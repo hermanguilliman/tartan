@@ -300,7 +300,6 @@ const PALETTE = {
     ],
 };
 
-/* Какие коды входят в каждый «доминирующий» по тону */
 const DOM_GROUPS = {
     B: {
         any: ["B", "LB", "DB"],
@@ -365,6 +364,13 @@ const DOM_GROUPS = {
         historical: ["W", "LN"],
         modern: ["W"],
     },
+    O: {
+        any: ["O", "LO"],
+        dark: ["O"],
+        light: ["LO", "O"],
+        historical: ["O"],
+        modern: ["O", "LO"],
+    },
     C: {
         any: ["C", "DC", "LC"],
         dark: ["DC", "C"],
@@ -402,7 +408,6 @@ const DOM_GROUPS = {
     },
 };
 
-/* Исторически достоверные акцентные пары */
 const ACCENT_SETS = {
     B: [
         ["K", "G"],
@@ -487,6 +492,14 @@ const ACCENT_SETS = {
         ["C", "K"],
         ["E", "K"],
     ],
+    O: [
+        ["K", "G"],
+        ["K", "B"],
+        ["K", "W"],
+        ["G", "W"],
+        ["K", "Y"],
+        ["B", "K"],
+    ],
     C: [
         ["K", "W"],
         ["K", "G"],
@@ -530,7 +543,6 @@ const ACCENT_SETS = {
     ],
 };
 
-/* Настоящие кланы для атмосферной подписи */
 const CLANS = [
     {
         name: "Royal Stewart",

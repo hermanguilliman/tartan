@@ -1,8 +1,11 @@
+<!DOCTYPE html>
+<html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- ═══ Базовое SEO ═══ -->
+
     <title>Генератор тартана — шотландские узоры и обои онлайн</title>
     <meta name="description"
         content="Бесплатный онлайн-генератор тартана. Создавайте аутентичные шотландские клетчатые узоры по нотации Thread Count и скачивайте обои для iPhone, Android и ПК в Full HD, 4K.">
@@ -12,7 +15,7 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://tartan.guilliman.ru/">
 
-    <!-- ═══ Open Graph (ВКонтакте, Telegram, Facebook) ═══ -->
+
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://tartan.guilliman.ru/">
     <meta property="og:title" content="Генератор тартана — шотландские узоры онлайн">
@@ -25,13 +28,13 @@
     <meta property="og:locale" content="ru_RU">
     <meta property="og:site_name" content="Генератор тартана">
 
-    <!-- ═══ Twitter / X Cards ═══ -->
+
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Генератор тартана — шотландские узоры онлайн">
     <meta name="twitter:description" content="Создавайте аутентичные тартаны и скачивайте обои для любых устройств.">
     <meta name="twitter:image" content="https://tartan.guilliman.ru/assets/og-image.png">
 
-    <!-- ═══ JSON-LD: WebApplication (структурированные данные) ═══ -->
+
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -50,7 +53,7 @@
       "inLanguage": "ru",
       "featureList": [
         "Генерация тартана по нотации Thread Count",
-        "14 базовых цветов с тёмными и светлыми вариантами",
+        "15 базовых цветов с тёмными и светлыми вариантами",
         "Экспорт обоев для iPhone, Android и ПК до 4K",
         "Режимы: заполнение, мозаика, градиент",
         "История паттернов",
@@ -60,14 +63,14 @@
     }
     </script>
 
-    <!-- ═══ PWA / Мобильные ═══ -->
+
     <meta name="theme-color" content="#0d0e16">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Тартан">
 
-    <!-- ═══ Favicons ═══ -->
+
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-light-32.png"
         media="(prefers-color-scheme: light)">
     <link rel="icon" type="image/png" sizes="128x128" href="assets/favicon-light-128.png"
@@ -80,7 +83,7 @@
         media="(prefers-color-scheme: dark)">
     <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-dark-192.png"
         media="(prefers-color-scheme: dark)">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon-light-180.png">
+    <link class="apple-touch-icon" sizes="180x180" href="assets/favicon-light-180.png">
     <link rel="manifest" href="manifest.json">
 
     <link rel="stylesheet" href="css/styles.css">
@@ -113,6 +116,7 @@
                     <option value="T">Коричневый</option>
                     <option value="P">Фиолетовый</option>
                     <option value="Y">Жёлтый</option>
+                    <option value="O">Оранжевый</option>
                     <option value="N">Серый</option>
                     <option value="W">Белый</option>
                     <option value="C">Малиновый</option>
@@ -149,7 +153,7 @@
                 <textarea id="tcInput" rows="2" placeholder="G/24 B4 K24 B4 G/24"></textarea>
                 <div class="tc-error" id="tcError">Ошибка разбора. Пример: G/24 B4 K24</div>
                 <button class="btn-sm" id="applyTC">Применить</button>
-                <div class="tc-hint">B G K R T P Y N W O C M E I S · D/L — префиксы · / — якорь</div>
+                <div class="tc-hint">B G K R T P Y O N W C M E I S · D/L — префиксы · / — якорь</div>
             </div>
 
             <div id="wallpaperControls" style="display:none">
@@ -220,7 +224,8 @@
 
                 <div class="ctrl-label">Стиль</div>
                 <div class="style-grid">
-                    <button class="style-btn active" data-style="fill">Заполнение</button>
+                    <button class="style-btn active" data-style="fill">Заливка</button>
+                    <button class="style-btn" data-style="tile">Мозаика</button>
                     <button class="style-btn" data-style="gradient">Градиент</button>
                 </div>
                 <div class="ctrl-slider" style="margin-top:10px">
