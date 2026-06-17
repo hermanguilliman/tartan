@@ -854,46 +854,94 @@ canvas {
     color: var(--accent);
 }
 
+.preview-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    margin-bottom: 4px;
+    width: 100%;
+    max-width: 460px;
+    justify-content: center;
+    z-index: 5;
+}
+
+.btn-gen-mid,
+.btn-rand-mid {
+    flex: 1;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+}
+
+.btn-gen-mid {
+    background: linear-gradient(135deg, var(--accent), #1ab8ca);
+    color: #080a10;
+}
+
+.btn-gen-mid:hover {
+    box-shadow: 0 6px 20px rgba(42, 212, 232, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-rand-mid {
+    background: linear-gradient(135deg, var(--accent2), #d43870);
+    color: #fff;
+}
+
+.btn-rand-mid:hover {
+    box-shadow: 0 6px 20px rgba(255, 77, 136, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-gen-mid:active,
+.btn-rand-mid:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.btn-gen-mid:disabled,
+.btn-rand-mid:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn-gen-mid span,
+.btn-rand-mid span {
+    font-size: 18px;
+    line-height: 1;
+}
+
 @media (max-width: 999px) {
-    body {
-        height: auto;
-        overflow: auto;
-    }
-    .main {
-        display: flex;
-        flex-direction: column;
-        grid-template-columns: 1fr;
-        overflow: visible;
-        height: auto;
-    }
-    .sidebar {
-        border-right: none;
-        border-bottom: none;
-        max-height: none;
-        overflow-y: visible;
-        order: 2;
-    }
-    .preview {
-        min-height: 65vh;
-        border-bottom: 1px solid var(--border);
-        order: 1;
+    .preview-actions {
+        max-width: 100%;
+        padding: 0 16px;
+        margin-top: 16px;
     }
 }
 
 @media (max-width: 500px) {
-    .topbar {
-        padding: 0 14px;
-        gap: 10px;
+    .preview-actions {
+        gap: 8px;
     }
-    .mode-tab {
-        padding: 7px 14px;
-        font-size: 14px;
+    .btn-gen-mid,
+    .btn-rand-mid {
+        padding: 10px 14px;
+        font-size: 13px;
+        border-radius: 10px;
     }
-    .logo {
-        font-size: 18px;
-    }
-    .btn-dl-top {
-        padding: 8px 14px;
-        font-size: 14px;
+    .btn-gen-mid span,
+    .btn-rand-mid span {
+        font-size: 15px;
     }
 }
