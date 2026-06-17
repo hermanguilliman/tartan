@@ -90,7 +90,14 @@
         colorDot.style.background =
             "rgb(" + firstCol[0] + "," + firstCol[1] + "," + firstCol[2] + ")";
 
-        clanName.textContent = pick(CLANS).name;
+        var matchedName = findClanByTokens(tokens);
+        if (matchedName) {
+            clanName.textContent = matchedName;
+            clanName.style.color = "var(--accent2)";
+        } else {
+            clanName.textContent = "Индивидуальный узор";
+            clanName.style.color = "var(--muted)";
+        }
     }
 
     function rebuildPatterns() {

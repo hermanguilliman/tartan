@@ -67,3 +67,78 @@ function settToTCString(sett) {
         })
         .join(" ");
 }
+
+function getGCD(a, b) {
+    while (b) {
+        var t = b;
+        b = a % b;
+        a = t;
+    }
+    return a;
+}
+
+/** Приводит пропорции нитей к базовому знаменателю */
+function normalizeTokens(tokens) {
+    if (!tokens || tokens.length === 0) return [];
+    var gcd = tokens[0].count;
+    for (var i = 1; i < tokens.length; i++) {
+        gcd = getGCD(gcd, tokens[i].count);
+    }
+    return tokens.map(function (t) {
+        return {
+            code: t.code.toUpperCase(),
+            count: Math.round(t.count / gcd),
+            pivot: !!t.pivot,
+        };
+    });
+}
+
+/** Сравнивает два набора токенов (прямое совпадение или реверсивное) */
+function areTokensEqual(tokensA, tokensB) {
+    if (tokensA.length !== tokensB.length) return false;
+
+    var directMatch = true;
+    for (var i = 0; i < tokensA.length; i++) {
+        if (
+            tokensA[i].code !== tokensB[i].code ||
+            tokensA[i].count !== tokensB[i].count ||
+            tokensA[i].pivot !== tokensB[i].pivot
+        ) {
+            directMatch = false;
+            break;
+        }
+    }
+    if (directMatch) return true;
+
+    var reverseMatch = true;
+    var len = tokensA.length;
+    for (var i = 0; i < len; i++) {
+        var b = tokensB[len - 1 - i];
+        if (
+            tokensA[i].code !== b.code ||
+            tokensA[i].count !== b.count ||
+            tokensA[i].pivot !== b.pivot
+        ) {
+            reverseMatch = false;
+            break;
+        }
+    }
+    return reverseMatch;
+}
+
+/** Ищет имя клана по совпадению нитей в базе данных CLANS */
+function findClanByTokens(tokens) {
+    if (!tokens || tokens.length === 0) return null;
+    var normA = normalizeTokens(tokens);
+
+    for (var i = 0; i < CLANS.length; i++) {
+        var clanTokens = parseThreadCount(CLANS[i].tc);
+        if (!clanTokens) continue;
+        var normB = normalizeTokens(clanTokens);
+
+        if (areTokensEqual(normA, normB)) {
+            return CLANS[i].name;
+        }
+    }
+    return null;
+}

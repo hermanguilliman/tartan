@@ -1,12 +1,32 @@
 function generateSett(domKey, toneKey) {
     var historical = toneKey === "historical";
 
+    if (historical || Math.random() < 0.25) {
+        var candidates = CLANS.filter(function (clan) {
+            var tokens = parseThreadCount(clan.tc);
+            if (!tokens || tokens.length === 0) return false;
+            var firstCode = tokens[0].code;
+
+            if (firstCode === domKey) return true;
+            if (firstCode.length === 2 && firstCode.charAt(1) === domKey)
+                return true;
+            return false;
+        });
+
+        if (candidates.length > 0) {
+            var chosen = pick(candidates);
+            var parsed = parseThreadCount(chosen.tc);
+            if (parsed) {
+                return { tokens: parsed, historical: true };
+            }
+        }
+    }
+
     var groups = DOM_GROUPS[domKey] || DOM_GROUPS["G"];
     var domCodes = groups[toneKey] || groups["any"];
     var domCode = pick(domCodes);
 
     var accSet = pick(ACCENT_SETS[domKey] || ACCENT_SETS["G"]);
-
     var rType = Math.random();
     var tokens = [];
 
@@ -20,7 +40,6 @@ function generateSett(domKey, toneKey) {
         var domW = Math.floor(rand(24, 48));
         var bgW = Math.floor(rand(16, 32));
         var accW = Math.floor(rand(2, 6));
-
         var bgCode =
             pick(
                 ["K", "N", "DS", "DB", "DG"].filter(function (c) {
