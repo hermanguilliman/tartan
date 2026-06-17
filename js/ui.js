@@ -9,6 +9,7 @@
     var toneEl = document.getElementById("tone");
     var textureEl = document.getElementById("texture");
     var warpweftEl = document.getElementById("warpweft");
+    var threadStyleEl = document.getElementById("threadStyle");
     var densityEl = document.getElementById("density");
     var densityLabel = document.getElementById("densityLabel");
 
@@ -182,6 +183,7 @@
         if (!currentTokens || !cachedWarp) return;
 
         var density = parseFloat(densityEl.value) || 1;
+        var thStyle = threadStyleEl ? threadStyleEl.value : "classic";
         var full = getFullResolution();
 
         offscreenCanvas = document.createElement("canvas");
@@ -194,7 +196,7 @@
                 cachedWarp,
                 cachedWeft,
                 textureEl.checked,
-                { pixelScale: density },
+                { pixelScale: density, threadStyle: thStyle },
             );
         } else {
             drawWallpaper(
@@ -206,6 +208,7 @@
                     mode: wpStyle,
                     pixelScale: density,
                     vignette: vignetteEl ? parseFloat(vignetteEl.value) : 0.4,
+                    threadStyle: thStyle,
                 },
             );
         }
@@ -423,6 +426,12 @@
         renderNow();
     });
 
+    if (threadStyleEl) {
+        threadStyleEl.addEventListener("change", function () {
+            renderNow();
+        });
+    }
+
     densityEl.addEventListener("input", function () {
         densityLabel.textContent = this.value + "x";
         renderDebounced();
@@ -465,6 +474,11 @@
         );
         textureEl.checked = Math.random() > 0.25;
         warpweftEl.checked = Math.random() > 0.85;
+        if (threadStyleEl) {
+            threadStyleEl.selectedIndex = Math.floor(
+                Math.random() * threadStyleEl.options.length,
+            );
+        }
         if (vignetteEl) {
             vignetteEl.value = rand(0.1, 0.7).toFixed(1);
             vignetteLabel.textContent =

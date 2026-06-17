@@ -127,7 +127,27 @@
                 </select>
                 <div class="color-dot" id="colorDot"></div>
             </div>
+            <div class="ctrl-label">Ткань</div>
+            <label class="ctrl-check"><input type="checkbox" id="texture" checked> Са&#769ржа 2/2</label>
+            <label class="ctrl-check"><input type="checkbox" id="warpweft"> Разные цвета основы и утки&#769</label>
 
+            <div class="ctrl-row" style="margin-top: 8px; margin-bottom: 8px;">
+                <span class="slider-name" style="font-size: 13px; color: var(--muted); min-width: 80px;">Стиль
+                    нити</span>
+                <select id="threadStyle"
+                    style="padding: 6px 10px; font-size: 13px; border-radius: 7px; width: auto; flex: 1;">
+                    <option value="classic">Классический</option>
+                    <option value="flat">Плоский (Вектор)</option>
+                    <option value="wool">Шерстяной (Мягкий)</option>
+                    <option value="silk">Шёлковый (Глянец)</option>
+                </select>
+            </div>
+
+            <div class="ctrl-slider" style="margin-top:6px">
+                <span class="slider-name">Плотность</span>
+                <input type="range" id="density" min="0.5" max="5" step="0.5" value="1">
+                <span class="slider-val" id="densityLabel">1x</span>
+            </div>
             <div class="ctrl-label">Тон</div>
             <select id="tone">
                 <option value="any">Любой</option>
@@ -136,15 +156,6 @@
                 <option value="historical">Исторический</option>
                 <option value="modern">Современный</option>
             </select>
-
-            <div class="ctrl-label">Ткань</div>
-            <label class="ctrl-check"><input type="checkbox" id="texture" checked> Са&#769ржа 2/2</label>
-            <label class="ctrl-check"><input type="checkbox" id="warpweft"> Разные цвета основы и утки&#769</label>
-            <div class="ctrl-slider" style="margin-top:6px">
-                <span class="slider-name">Плотность</span>
-                <input type="range" id="density" min="0.5" max="5" step="0.5" value="1">
-                <span class="slider-val" id="densityLabel">1x</span>
-            </div>
 
             <div class="ctrl-divider"></div>
 

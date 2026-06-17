@@ -21,6 +21,8 @@ function drawTartan(canvas, warpPattern, weftPattern, useTexture, options) {
 
     var density = options && options.pixelScale ? options.pixelScale : 1;
     var style = options && options.style ? options.style : "fill";
+    var threadStyle =
+        options && options.threadStyle ? options.threadStyle : "classic";
 
     var scale;
     if (style === "tile") {
@@ -72,36 +74,116 @@ function drawTartan(canvas, warpPattern, weftPattern, useTexture, options) {
                 if (threadX < 0) threadX += 1;
                 if (threadY < 0) threadY += 1;
 
-                var edgeShadow = 1.0;
                 var edgeDist = warpOnTop
                     ? Math.min(threadX, 1.0 - threadX)
                     : Math.min(threadY, 1.0 - threadY);
-                if (edgeDist < 0.15) {
-                    edgeShadow = 0.8 + (edgeDist / 0.15) * 0.2;
-                }
 
-                var bump = warpOnTop
-                    ? 60 * threadX * (1.0 - threadX) - 4
-                    : 60 * threadY * (1.0 - threadY) - 4;
+                if (threadStyle === "flat") {
+                    var edgeShadow = 1.0;
+                    if (edgeDist < 0.12) {
+                        edgeShadow = 0.78 + (edgeDist / 0.12) * 0.22;
+                    }
+                    r = clamp(r * edgeShadow);
+                    g = clamp(g * edgeShadow);
+                    b = clamp(b * edgeShadow);
+                } else if (threadStyle === "wool") {
+                    var fuzzIdx = (px * 17 + py * 23) % 1000;
+                    if (fIdx < 0) fIdx += 1000;
+                    var fuzz = sinNoiseLUT[fuzzIdx] * 0.035;
 
-                var fIdx;
-                if (warpOnTop) {
-                    fIdx = (px * 8 + py * 4) % 40;
-                    if (fIdx < 0) fIdx += 40;
-                    var fiberAngle = fiberAngleWarpLUT[fIdx];
+                    var edgeDistFuzzy = edgeDist + fuzz;
+                    var edgeShadow = 1.0;
+                    if (edgeDistFuzzy < 0.22) {
+                        edgeShadow =
+                            0.72 + (Math.max(0, edgeDistFuzzy) / 0.22) * 0.28;
+                    }
+
+                    var bump = warpOnTop
+                        ? 40 * threadX * (1.0 - threadX) - 6
+                        : 40 * threadY * (1.0 - threadY) - 6;
+
+                    var fIdx;
+                    if (warpOnTop) {
+                        fIdx = (px * 8 + py * 4) % 40;
+                        if (fIdx < 0) fIdx += 40;
+                        var fiberAngle = fiberAngleWarpLUT[fIdx];
+                    } else {
+                        fIdx = (px * 4 - py * 8) % 40;
+                        if (fIdx < 0) fIdx += 40;
+                        var fiberAngle = fiberAngleWeftLUT[fIdx];
+                    }
+
+                    var woolNoiseIdx = (px * 9 - py * 13) % 1000;
+                    if (woolNoiseIdx < 0) woolNoiseIdx += 1000;
+                    var organicNoise = sinNoiseLUT[woolNoiseIdx] * 2.5;
+
+                    var fiber = fiberAngle * 1.8 + organicNoise;
+
+                    r = clamp(r * edgeShadow + bump + fiber);
+                    g = clamp(g * edgeShadow + bump + fiber);
+                    b = clamp(b * edgeShadow + bump + fiber);
+                } else if (threadStyle === "silk") {
+                    var edgeShadow = 1.0;
+                    if (edgeDist < 0.08) {
+                        edgeShadow = 0.7 + (edgeDist / 0.08) * 0.3;
+                    }
+
+                    var centerDist = warpOnTop
+                        ? 1.0 - Math.abs(threadX - 0.5) * 2.0
+                        : 1.0 - Math.abs(threadY - 0.5) * 2.0;
+
+                    var specular =
+                        Math.pow(Math.max(0, centerDist), 5.0) * 28.0;
+
+                    var bump = warpOnTop
+                        ? 30 * threadX * (1.0 - threadX) - 3
+                        : 30 * threadY * (1.0 - threadY) - 3;
+
+                    var fIdx;
+                    if (warpOnTop) {
+                        fIdx = (px * 8 + py * 4) % 40;
+                        if (fIdx < 0) fIdx += 40;
+                        var fiberAngle = fiberAngleWarpLUT[fIdx];
+                    } else {
+                        fIdx = (px * 4 - py * 8) % 40;
+                        if (fIdx < 0) fIdx += 40;
+                        var fiberAngle = fiberAngleWeftLUT[fIdx];
+                    }
+
+                    var fiber = fiberAngle * 1.2;
+
+                    r = clamp(r * edgeShadow + bump + specular + fiber);
+                    g = clamp(g * edgeShadow + bump + specular + fiber);
+                    b = clamp(b * edgeShadow + bump + specular + fiber);
                 } else {
-                    fIdx = (px * 4 - py * 8) % 40;
-                    if (fIdx < 0) fIdx += 40;
-                    var fiberAngle = fiberAngleWeftLUT[fIdx];
+                    var edgeShadow = 1.0;
+                    if (edgeDist < 0.15) {
+                        edgeShadow = 0.8 + (edgeDist / 0.15) * 0.2;
+                    }
+
+                    var bump = warpOnTop
+                        ? 60 * threadX * (1.0 - threadX) - 4
+                        : 60 * threadY * (1.0 - threadY) - 4;
+
+                    var fIdx;
+                    if (warpOnTop) {
+                        fIdx = (px * 8 + py * 4) % 40;
+                        if (fIdx < 0) fIdx += 40;
+                        var fiberAngle = fiberAngleWarpLUT[fIdx];
+                    } else {
+                        fIdx = (px * 4 - py * 8) % 40;
+                        if (fIdx < 0) fIdx += 40;
+                        var fiberAngle = fiberAngleWeftLUT[fIdx];
+                    }
+
+                    var noiseIdx = (px - py) % 1000;
+                    if (noiseIdx < 0) noiseIdx += 1000;
+                    var fiber = fiberAngle * 3.5 + sinNoiseLUT[noiseIdx];
+
+                    r = clamp(r * edgeShadow + bump + fiber);
+                    g = clamp(g * edgeShadow + bump + fiber);
+                    b = clamp(b * edgeShadow + bump + fiber);
                 }
-
-                var noiseIdx = (px - py) % 1000;
-                if (noiseIdx < 0) noiseIdx += 1000;
-                var fiber = fiberAngle * 3.5 + sinNoiseLUT[noiseIdx];
-
-                r = clamp(r * edgeShadow + bump + fiber);
-                g = clamp(g * edgeShadow + bump + fiber);
-                b = clamp(b * edgeShadow + bump + fiber);
             }
 
             var i = (py * w + px) * 4;
@@ -130,6 +212,7 @@ function drawWallpaper(canvas, warpPattern, weftPattern, useTexture, options) {
     drawTartan(canvas, warpPattern, weftPattern, useTexture, {
         pixelScale: density,
         style: mode,
+        threadStyle: options.threadStyle || "classic",
     });
 
     if (mode === "gradient") {
