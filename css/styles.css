@@ -860,17 +860,23 @@ canvas {
         overflow: auto;
     }
     .main {
+        display: flex;
+        flex-direction: column;
         grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr;
+        overflow: visible;
+        height: auto;
     }
     .sidebar {
         border-right: none;
-        border-bottom: 1px solid var(--border);
+        border-bottom: none;
         max-height: none;
         overflow-y: visible;
+        order: 2;
     }
     .preview {
-        min-height: 60vh;
+        min-height: 65vh;
+        border-bottom: 1px solid var(--border);
+        order: 1;
     }
 }
 

@@ -30,6 +30,7 @@
     var addStripBtn = document.getElementById("addStripBtn");
     var toggleFormulaBtn = document.getElementById("toggleFormulaBtn");
     var formulaContainer = document.getElementById("formulaContainer");
+    var applyTCBtn = document.getElementById("applyTC");
 
     var currentMode = "pattern";
     var wpPresetW = 1920;
@@ -47,6 +48,7 @@
 
     var offscreenCanvas = null;
     var renderTimer = null;
+    var historyDebounceTimer = null;
 
     var history = [];
     try {
@@ -54,6 +56,17 @@
         if (saved) history = JSON.parse(saved);
     } catch (e) {
         history = [];
+    }
+
+    function deepCopyTokens(tokens) {
+        if (!tokens) return [];
+        return tokens.map(function (t) {
+            return {
+                code: t.code,
+                count: parseInt(t.count) || 2,
+                pivot: !!t.pivot,
+            };
+        });
     }
 
     function saveHistoryToStore() {
@@ -65,44 +78,58 @@
     }
 
     function setLoading(on) {
-        loaderEl.classList.toggle("on", on);
-        document.getElementById("generateBtn").disabled = on;
-        document.getElementById("randomBtn").disabled = on;
+        if (loaderEl) loaderEl.classList.toggle("on", on);
+        var genBtn = document.getElementById("generateBtn");
+        var randBtn = document.getElementById("randomBtn");
+        if (genBtn) genBtn.disabled = on;
+        if (randBtn) randBtn.disabled = on;
     }
 
     function updateUI(tokens) {
-        tcDisplay.textContent = settToTCString(tokens);
+        if (tcDisplay) tcDisplay.textContent = settToTCString(tokens);
 
-        paletteRow.innerHTML = "";
-        var seen = {};
-        tokens.forEach(function (t) {
-            if (seen[t.code]) return;
-            seen[t.code] = true;
+        if (paletteRow) {
+            paletteRow.innerHTML = "";
+            var seen = {};
+            tokens.forEach(function (t) {
+                if (seen[t.code]) return;
+                seen[t.code] = true;
 
-            var col =
-                (currentPaletteMap && currentPaletteMap[t.code]) ||
-                getColor(t.code, 0);
-            var sw = document.createElement("div");
-            sw.className = "swatch";
-            sw.style.background =
-                "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
-            paletteRow.appendChild(sw);
-        });
+                var col =
+                    (currentPaletteMap && currentPaletteMap[t.code]) ||
+                    getColor(t.code, 0);
+                var sw = document.createElement("div");
+                sw.className = "swatch";
+                sw.style.background =
+                    "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
+                paletteRow.appendChild(sw);
+            });
+        }
 
-        var firstCode = tokens[0].code;
-        var firstCol =
-            (currentPaletteMap && currentPaletteMap[firstCode]) ||
-            getColor(firstCode, 0);
-        colorDot.style.background =
-            "rgb(" + firstCol[0] + "," + firstCol[1] + "," + firstCol[2] + ")";
+        if (colorDot && tokens.length > 0) {
+            var firstCode = tokens[0].code;
+            var firstCol =
+                (currentPaletteMap && currentPaletteMap[firstCode]) ||
+                getColor(firstCode, 0);
+            colorDot.style.background =
+                "rgb(" +
+                firstCol[0] +
+                "," +
+                firstCol[1] +
+                "," +
+                firstCol[2] +
+                ")";
+        }
 
-        var matchedName = findClanByTokens(tokens);
-        if (matchedName) {
-            clanName.textContent = matchedName;
-            clanName.style.color = "var(--accent2)";
-        } else {
-            clanName.textContent = "Индивидуальный узор";
-            clanName.style.color = "var(--muted)";
+        if (clanName) {
+            var matchedName = findClanByTokens(tokens);
+            if (matchedName) {
+                clanName.textContent = matchedName;
+                clanName.style.color = "var(--accent2)";
+            } else {
+                clanName.textContent = "Индивидуальный узор";
+                clanName.style.color = "var(--muted)";
+            }
         }
 
         syncBuilderFromTokens(tokens);
@@ -137,6 +164,7 @@
                 token.code = newCode;
                 rebuildFromBuilder();
                 updateUI(currentTokens);
+                triggerHistorySaveDebounced();
             });
         });
 
@@ -151,6 +179,7 @@
             token.count = Math.max(1, token.count - (token.count > 10 ? 4 : 2));
             sizeInput.value = token.count;
             rebuildFromBuilder();
+            triggerHistorySaveDebounced();
         });
 
         var sizeInput = document.createElement("input");
@@ -162,6 +191,7 @@
             token.count = Math.max(1, val);
             this.value = token.count;
             rebuildFromBuilder();
+            triggerHistorySaveDebounced();
         });
 
         var btnPlus = document.createElement("button");
@@ -172,6 +202,7 @@
             token.count = token.count + (token.count >= 10 ? 4 : 2);
             sizeInput.value = token.count;
             rebuildFromBuilder();
+            triggerHistorySaveDebounced();
         });
 
         sizeCtrl.appendChild(btnMinus);
@@ -186,6 +217,7 @@
             token.pivot = !token.pivot;
             pivotBtn.classList.toggle("active", token.pivot);
             rebuildFromBuilder();
+            triggerHistorySaveDebounced();
         });
 
         var removeBtn = document.createElement("button");
@@ -200,6 +232,7 @@
             }
             rebuildFromBuilder();
             updateUI(currentTokens);
+            triggerHistorySaveDebounced();
         });
 
         div.appendChild(colorBtn);
@@ -321,45 +354,61 @@
     }
 
     function rebuildFromBuilder() {
-        tcInput.value = settToTCString(currentTokens);
+        if (tcInput) tcInput.value = settToTCString(currentTokens);
         rebuildPatterns();
         renderNow();
 
-        tcDisplay.textContent = tcInput.value;
-        var matchedName = findClanByTokens(currentTokens);
-        if (matchedName) {
-            clanName.textContent = matchedName;
-            clanName.style.color = "var(--accent2)";
-        } else {
-            clanName.textContent = "Индивидуальный узор";
-            clanName.style.color = "var(--muted)";
+        if (tcDisplay) tcDisplay.textContent = settToTCString(currentTokens);
+        if (clanName) {
+            var matchedName = findClanByTokens(currentTokens);
+            if (matchedName) {
+                clanName.textContent = matchedName;
+                clanName.style.color = "var(--accent2)";
+            } else {
+                clanName.textContent = "Индивидуальный узор";
+                clanName.style.color = "var(--muted)";
+            }
         }
     }
 
-    addStripBtn.addEventListener("click", function () {
-        var lastToken = currentTokens[currentTokens.length - 1] || {
-            code: "B",
-            count: 24,
-            pivot: false,
-        };
-        currentTokens.push({
-            code: lastToken.code,
-            count: lastToken.count,
-            pivot: false,
-        });
-        rebuildFromBuilder();
-        updateUI(currentTokens);
-    });
+    function triggerHistorySaveDebounced() {
+        clearTimeout(historyDebounceTimer);
+        historyDebounceTimer = setTimeout(function () {
+            addToHistory(currentTokens, currentHistorical);
+        }, 1000);
+    }
 
-    toggleFormulaBtn.addEventListener("click", function () {
-        if (formulaContainer.style.display === "none") {
-            formulaContainer.style.display = "block";
-            toggleFormulaBtn.textContent = "Скрыть формулу (Thread Count)";
-        } else {
-            formulaContainer.style.display = "none";
-            toggleFormulaBtn.textContent = "Показать формулу (Thread Count)";
-        }
-    });
+    if (addStripBtn) {
+        addStripBtn.addEventListener("click", function () {
+            var lastToken = (currentTokens &&
+                currentTokens[currentTokens.length - 1]) || {
+                code: "B",
+                count: 24,
+                pivot: false,
+            };
+            currentTokens.push({
+                code: lastToken.code,
+                count: lastToken.count,
+                pivot: false,
+            });
+            rebuildFromBuilder();
+            updateUI(currentTokens);
+            triggerHistorySaveDebounced();
+        });
+    }
+
+    if (toggleFormulaBtn && formulaContainer) {
+        toggleFormulaBtn.addEventListener("click", function () {
+            if (formulaContainer.style.display === "none") {
+                formulaContainer.style.display = "block";
+                toggleFormulaBtn.textContent = "Скрыть формулу (Thread Count)";
+            } else {
+                formulaContainer.style.display = "none";
+                toggleFormulaBtn.textContent =
+                    "Показать формулу (Thread Count)";
+            }
+        });
+    }
 
     function rebuildPatterns() {
         if (!currentTokens) return;
@@ -371,7 +420,7 @@
 
         var pattern = buildPatternFromTokens(currentTokens, currentPaletteMap);
         var weftPattern = pattern;
-        if (warpweftEl.checked) {
+        if (warpweftEl && warpweftEl.checked) {
             var offset = Math.floor(
                 rand(pattern.length * 0.2, pattern.length * 0.5),
             );
@@ -422,6 +471,7 @@
     }
 
     function drawSmooth(src, dstCanvas) {
+        if (!dstCanvas) return;
         var dstCtx = dstCanvas.getContext("2d");
         dstCtx.imageSmoothingEnabled = true;
         dstCtx.imageSmoothingQuality = "high";
@@ -440,9 +490,9 @@
     }
 
     function doRender() {
-        if (!currentTokens || !cachedWarp) return;
+        if (!currentTokens || !cachedWarp || !canvasEl) return;
 
-        var density = parseFloat(densityEl.value) || 1;
+        var density = densityEl ? parseFloat(densityEl.value) : 1;
         var thStyle = threadStyleEl ? threadStyleEl.value : "classic";
         var full = getFullResolution();
 
@@ -450,39 +500,34 @@
         offscreenCanvas.width = full.w;
         offscreenCanvas.height = full.h;
 
+        var useTex = textureEl ? textureEl.checked : true;
+
         if (currentMode === "pattern") {
-            drawTartan(
-                offscreenCanvas,
-                cachedWarp,
-                cachedWeft,
-                textureEl.checked,
-                { pixelScale: density, threadStyle: thStyle },
-            );
+            drawTartan(offscreenCanvas, cachedWarp, cachedWeft, useTex, {
+                pixelScale: density,
+                threadStyle: thStyle,
+            });
         } else {
-            drawWallpaper(
-                offscreenCanvas,
-                cachedWarp,
-                cachedWeft,
-                textureEl.checked,
-                {
-                    mode: wpStyle,
-                    pixelScale: density,
-                    vignette: vignetteEl ? parseFloat(vignetteEl.value) : 0.4,
-                    threadStyle: thStyle,
-                },
-            );
+            drawWallpaper(offscreenCanvas, cachedWarp, cachedWeft, useTex, {
+                mode: wpStyle,
+                pixelScale: density,
+                vignette: vignetteEl ? parseFloat(vignetteEl.value) : 0.4,
+                threadStyle: thStyle,
+            });
         }
 
         var sz = calcPreviewSize();
         canvasEl.width = sz.w;
         canvasEl.height = sz.h;
 
-        containerEl.classList.remove("device-phone", "device-desktop");
-        if (currentMode === "wallpaper") {
-            var ratio = full.w / full.h;
-            containerEl.classList.add(
-                ratio < 1 ? "device-phone" : "device-desktop",
-            );
+        if (containerEl) {
+            containerEl.classList.remove("device-phone", "device-desktop");
+            if (currentMode === "wallpaper") {
+                var ratio = full.w / full.h;
+                containerEl.classList.add(
+                    ratio < 1 ? "device-phone" : "device-desktop",
+                );
+            }
         }
 
         drawSmooth(offscreenCanvas, canvasEl);
@@ -506,21 +551,26 @@
     }
 
     function generate() {
-        currentSize = parseInt(sizeEl.value);
-        sizeLabel.textContent = currentSize;
+        if (sizeEl && sizeLabel) {
+            currentSize = parseInt(sizeEl.value);
+            sizeLabel.textContent = currentSize;
+        }
 
-        var domKey =
-            dominantEl.value === "any"
-                ? pick(Object.keys(DOM_GROUPS))
-                : dominantEl.value;
-        var toneKey = toneEl.value;
+        var domKey = "any";
+        if (dominantEl) {
+            domKey =
+                dominantEl.value === "any"
+                    ? pick(Object.keys(DOM_GROUPS))
+                    : dominantEl.value;
+        }
+        var toneKey = toneEl ? toneEl.value : "any";
         currentHistorical = toneKey === "historical";
 
         var result = generateSett(domKey, toneKey);
         currentTokens = result.tokens;
         currentHistorical = result.historical;
-        tcInput.value = settToTCString(result.tokens);
-        tcError.classList.remove("show");
+        if (tcInput) tcInput.value = settToTCString(result.tokens);
+        if (tcError) tcError.classList.remove("show");
 
         rebuildPatterns();
 
@@ -534,17 +584,18 @@
     }
 
     function applyThreadCount() {
+        if (!tcInput) return;
         var str = tcInput.value.trim();
         if (!str) return;
         var tokens = parseThreadCount(str);
         if (!tokens) {
-            tcError.classList.add("show");
+            if (tcError) tcError.classList.add("show");
             return;
         }
-        tcError.classList.remove("show");
+        if (tcError) tcError.classList.remove("show");
 
         currentTokens = tokens;
-        currentHistorical = toneEl.value === "historical";
+        currentHistorical = toneEl ? toneEl.value === "historical" : false;
 
         rebuildPatterns();
 
@@ -569,15 +620,17 @@
     }
 
     function addToHistory(tokens, historical) {
-        var thumb = makeThumbnail(tokens, historical);
+        var deepTokens = deepCopyTokens(tokens);
+        var thumb = makeThumbnail(deepTokens, historical);
+
         if (
             history.length > 0 &&
-            settToTCString(history[0].tokens) === settToTCString(tokens)
+            settToTCString(history[0].tokens) === settToTCString(deepTokens)
         )
             return;
 
         history.unshift({
-            tokens: tokens.slice(),
+            tokens: deepTokens,
             historical: historical,
             thumb: thumb,
             size: currentSize,
@@ -588,6 +641,7 @@
     }
 
     function renderHistory(activeIdx) {
+        if (!histStrip) return;
         histStrip.innerHTML = "";
         if (!history.length) {
             histStrip.innerHTML =
@@ -605,12 +659,14 @@
             wrap.appendChild(img);
 
             wrap.addEventListener("click", function () {
-                currentTokens = entry.tokens;
+                currentTokens = deepCopyTokens(entry.tokens);
                 currentHistorical = entry.historical;
                 currentSize = entry.size;
-                sizeEl.value = entry.size;
-                sizeLabel.textContent = entry.size;
-                tcInput.value = settToTCString(entry.tokens);
+                if (sizeEl && sizeLabel) {
+                    sizeEl.value = entry.size;
+                    sizeLabel.textContent = entry.size;
+                }
+                if (tcInput) tcInput.value = settToTCString(currentTokens);
 
                 rebuildPatterns();
 
@@ -638,16 +694,26 @@
         document.querySelectorAll(".mode-tab").forEach(function (t) {
             t.classList.toggle("active", t.dataset.mode === mode);
         });
-        document.getElementById("patternControls").style.display =
-            mode === "pattern" ? "block" : "none";
-        document.getElementById("wallpaperControls").style.display =
-            mode === "wallpaper" ? "block" : "none";
-        document.getElementById("patternExport").style.display =
-            mode === "pattern" ? "block" : "none";
-        document.getElementById("wallpaperExport").style.display =
-            mode === "wallpaper" ? "block" : "none";
-        dlBtn.textContent = mode === "pattern" ? "Скачать PNG" : "Скачать обои";
-        dlBtn.classList.toggle("wp-mode", mode === "wallpaper");
+
+        var pControls = document.getElementById("patternControls");
+        var wControls = document.getElementById("wallpaperControls");
+        var pExport = document.getElementById("patternExport");
+        var wExport = document.getElementById("wallpaperExport");
+
+        if (pControls)
+            pControls.style.display = mode === "pattern" ? "block" : "none";
+        if (wControls)
+            wControls.style.display = mode === "wallpaper" ? "block" : "none";
+        if (pExport)
+            pExport.style.display = mode === "pattern" ? "block" : "none";
+        if (wExport)
+            wExport.style.display = mode === "wallpaper" ? "block" : "none";
+
+        if (dlBtn) {
+            dlBtn.textContent =
+                mode === "pattern" ? "Скачать PNG" : "Скачать обои";
+            dlBtn.classList.toggle("wp-mode", mode === "wallpaper");
+        }
 
         renderNow();
     }
@@ -660,8 +726,8 @@
             this.classList.add("active");
             wpPresetW = parseInt(this.dataset.w);
             wpPresetH = parseInt(this.dataset.h);
-            document.getElementById("wpSizeInfo").textContent =
-                wpPresetW + " × " + wpPresetH;
+            var szInfo = document.getElementById("wpSizeInfo");
+            if (szInfo) szInfo.textContent = wpPresetW + " × " + wpPresetH;
             renderNow();
         });
     });
@@ -677,14 +743,18 @@
         });
     });
 
-    textureEl.addEventListener("change", function () {
-        renderNow();
-    });
+    if (textureEl) {
+        textureEl.addEventListener("change", function () {
+            renderNow();
+        });
+    }
 
-    warpweftEl.addEventListener("change", function () {
-        rebuildPatterns();
-        renderNow();
-    });
+    if (warpweftEl) {
+        warpweftEl.addEventListener("change", function () {
+            rebuildPatterns();
+            renderNow();
+        });
+    }
 
     if (threadStyleEl) {
         threadStyleEl.addEventListener("change", function () {
@@ -692,93 +762,111 @@
         });
     }
 
-    densityEl.addEventListener("input", function () {
-        densityLabel.textContent = this.value + "x";
-        renderDebounced();
-    });
-
-    if (vignetteEl) {
-        vignetteEl.addEventListener("input", function () {
-            vignetteLabel.textContent = Math.round(this.value * 100) + "%";
+    if (densityEl) {
+        densityEl.addEventListener("input", function () {
+            if (densityLabel) densityLabel.textContent = this.value + "x";
             renderDebounced();
         });
     }
 
-    sizeEl.addEventListener("input", function () {
-        currentSize = parseInt(sizeEl.value);
-        sizeLabel.textContent = currentSize;
-        renderDebounced();
-    });
+    if (vignetteEl) {
+        vignetteEl.addEventListener("input", function () {
+            if (vignetteLabel)
+                vignetteLabel.textContent = Math.round(this.value * 100) + "%";
+            renderDebounced();
+        });
+    }
 
-    dominantEl.addEventListener("change", generate);
-    toneEl.addEventListener("change", generate);
+    if (sizeEl) {
+        sizeEl.addEventListener("input", function () {
+            currentSize = parseInt(sizeEl.value);
+            if (sizeLabel) sizeLabel.textContent = currentSize;
+            renderDebounced();
+        });
+    }
 
-    document.getElementById("generateBtn").addEventListener("click", generate);
-    document
-        .getElementById("applyTC")
-        .addEventListener("click", applyThreadCount);
+    if (dominantEl) dominantEl.addEventListener("change", generate);
+    if (toneEl) toneEl.addEventListener("change", generate);
 
-    tcInput.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            applyThreadCount();
-        }
-    });
+    var mainGenBtn = document.getElementById("generateBtn");
+    if (mainGenBtn) mainGenBtn.addEventListener("click", generate);
 
-    document.getElementById("randomBtn").addEventListener("click", function () {
-        dominantEl.selectedIndex = Math.floor(
-            Math.random() * dominantEl.options.length,
-        );
-        toneEl.selectedIndex = Math.floor(
-            Math.random() * toneEl.options.length,
-        );
-        textureEl.checked = Math.random() > 0.25;
-        warpweftEl.checked = Math.random() > 0.85;
-        if (threadStyleEl) {
-            threadStyleEl.selectedIndex = Math.floor(
-                Math.random() * threadStyleEl.options.length,
-            );
-        }
-        if (vignetteEl) {
-            vignetteEl.value = rand(0.1, 0.7).toFixed(1);
-            vignetteLabel.textContent =
-                Math.round(vignetteEl.value * 100) + "%";
-        }
-        generate();
-    });
+    if (applyTCBtn) applyTCBtn.addEventListener("click", applyThreadCount);
 
-    dlBtn.addEventListener("click", function () {
-        if (!currentTokens) return;
+    if (tcInput) {
+        tcInput.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                applyThreadCount();
+            }
+        });
+    }
 
-        if (!offscreenCanvas) {
-            doRender();
-        }
+    var mainRandBtn = document.getElementById("randomBtn");
+    if (mainRandBtn) {
+        mainRandBtn.addEventListener("click", function () {
+            if (dominantEl) {
+                dominantEl.selectedIndex = Math.floor(
+                    Math.random() * dominantEl.options.length,
+                );
+            }
+            if (toneEl) {
+                toneEl.selectedIndex = Math.floor(
+                    Math.random() * toneEl.options.length,
+                );
+            }
+            if (textureEl) textureEl.checked = Math.random() > 0.25;
+            if (warpweftEl) warpweftEl.checked = Math.random() > 0.85;
+            if (threadStyleEl) {
+                threadStyleEl.selectedIndex = Math.floor(
+                    Math.random() * threadStyleEl.options.length,
+                );
+            }
+            if (vignetteEl) {
+                vignetteEl.value = rand(0.1, 0.7).toFixed(1);
+                if (vignetteLabel) {
+                    vignetteLabel.textContent =
+                        Math.round(vignetteEl.value * 100) + "%";
+                }
+            }
+            generate();
+        });
+    }
 
-        var filename;
-        if (currentMode === "pattern") {
-            filename = "tartan_" + Date.now() + ".png";
-        } else {
-            filename =
-                "tartan_wp_" +
-                wpPresetW +
-                "x" +
-                wpPresetH +
-                "_" +
-                Date.now() +
-                ".png";
-        }
+    if (dlBtn) {
+        dlBtn.addEventListener("click", function () {
+            if (!currentTokens) return;
 
-        var a = document.createElement("a");
-        a.download = filename;
-        a.href = offscreenCanvas.toDataURL("image/png");
-        a.click();
-    });
+            if (!offscreenCanvas) {
+                doRender();
+            }
+
+            var filename;
+            if (currentMode === "pattern") {
+                filename = "tartan_" + Date.now() + ".png";
+            } else {
+                filename =
+                    "tartan_wp_" +
+                    wpPresetW +
+                    "x" +
+                    wpPresetH +
+                    "_" +
+                    Date.now() +
+                    ".png";
+            }
+
+            var a = document.createElement("a");
+            a.download = filename;
+            a.href = offscreenCanvas.toDataURL("image/png");
+            a.click();
+        });
+    }
 
     var resizeTimer;
     window.addEventListener("resize", function () {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(function () {
-            if (!currentTokens || !offscreenCanvas) return;
+            if (!currentTokens || !offscreenCanvas || !canvasEl) return;
             var sz = calcPreviewSize();
             canvasEl.width = sz.w;
             canvasEl.height = sz.h;
@@ -788,12 +876,13 @@
 
     if (history.length > 0) {
         var last = history[0];
-        currentTokens = last.tokens;
+
+        currentTokens = deepCopyTokens(last.tokens);
         currentHistorical = last.historical;
         currentSize = last.size || 768;
-        tcInput.value = settToTCString(currentTokens);
-        sizeEl.value = currentSize;
-        sizeLabel.textContent = currentSize;
+        if (tcInput) tcInput.value = settToTCString(currentTokens);
+        if (sizeEl) sizeEl.value = currentSize;
+        if (sizeLabel) sizeLabel.textContent = currentSize;
 
         rebuildPatterns();
 
