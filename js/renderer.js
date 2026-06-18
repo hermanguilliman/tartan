@@ -88,7 +88,7 @@ function drawTartan(canvas, warpPattern, weftPattern, useTexture, options) {
                     b = clamp(b * edgeShadow);
                 } else if (threadStyle === "wool") {
                     var fuzzIdx = (px * 17 + py * 23) % 1000;
-                    if (fIdx < 0) fIdx += 1000;
+                    if (fuzzIdx < 0) fuzzIdx += 1000;
                     var fuzz = sinNoiseLUT[fuzzIdx] * 0.035;
 
                     var edgeDistFuzzy = edgeDist + fuzz;

@@ -32,6 +32,8 @@
     var formulaContainer = document.getElementById("formulaContainer");
     var applyTCBtn = document.getElementById("applyTC");
 
+    var backdropEl = document.getElementById("popoverBackdrop");
+
     var currentMode = "pattern";
     var wpPresetW = 1920;
     var wpPresetH = 1080;
@@ -244,9 +246,16 @@
     }
 
     function closeAllPopovers() {
-        document.querySelectorAll(".color-popover").forEach(function (el) {
-            el.remove();
+        var popovers = document.querySelectorAll(".color-popover");
+        popovers.forEach(function (el) {
+            el.classList.remove("active");
+            setTimeout(function () {
+                el.remove();
+            }, 280);
         });
+        if (backdropEl) {
+            backdropEl.classList.remove("active");
+        }
     }
 
     document.addEventListener("click", function () {
@@ -254,6 +263,8 @@
     });
 
     function openColorPopover(triggerEl, activeCode, onSelect) {
+        closeAllPopovers();
+
         var popover = document.createElement("div");
         popover.className = "color-popover";
 
@@ -279,7 +290,7 @@
             swatch.addEventListener("click", function (e) {
                 e.stopPropagation();
                 onSelect(key);
-                popover.remove();
+                closeAllPopovers();
             });
 
             popover.appendChild(swatch);
@@ -287,27 +298,41 @@
 
         document.body.appendChild(popover);
 
-        var rect = triggerEl.getBoundingClientRect();
-        var popoverWidth = 220;
-        var popoverHeight = 180;
+        if (window.innerWidth > 500) {
+            var rect = triggerEl.getBoundingClientRect();
+            var popoverWidth = 220;
+            var popoverHeight = 180;
 
-        var top = rect.bottom + 6;
-        var left = rect.left;
+            var top = rect.bottom + 6;
+            var left = rect.left;
 
-        if (top + popoverHeight > window.innerHeight) {
-            top = rect.top - popoverHeight - 6;
+            if (top + popoverHeight > window.innerHeight) {
+                top = rect.top - popoverHeight - 6;
+            }
+
+            if (left + popoverWidth > window.innerWidth) {
+                left = window.innerWidth - popoverWidth - 16;
+            }
+
+            if (left < 16) {
+                left = 16;
+            }
+
+            popover.style.top = top + "px";
+            popover.style.left = left + "px";
+        } else {
+            if (backdropEl) {
+                backdropEl.classList.add("active");
+                backdropEl.onclick = function (e) {
+                    e.stopPropagation();
+                    closeAllPopovers();
+                };
+            }
         }
 
-        if (left + popoverWidth > window.innerWidth) {
-            left = window.innerWidth - popoverWidth - 16;
-        }
-
-        if (left < 16) {
-            left = 16;
-        }
-
-        popover.style.top = top + "px";
-        popover.style.left = left + "px";
+        setTimeout(function () {
+            popover.classList.add("active");
+        }, 15);
     }
 
     function getFriendlyColorName(code) {
@@ -710,7 +735,7 @@
             wExport.style.display = mode === "wallpaper" ? "block" : "none";
 
         if (dlBtn) {
-            dlBtn.textContent =
+            dlBtn.querySelector(".btn-dl-text").textContent =
                 mode === "pattern" ? "Скачать PNG" : "Скачать обои";
             dlBtn.classList.toggle("wp-mode", mode === "wallpaper");
         }
