@@ -87,9 +87,10 @@ html {
 
 body {
     font-family: var(--font-body);
-    font-weight: 400;
+    font-weight: 500;
     font-size: 1rem;
-    line-height: 1.5;
+    line-height: 1.7;
+    letter-spacing: 0.02em;
     color: var(--text-primary);
     background: var(--black);
     height: 100dvh;
@@ -141,9 +142,9 @@ body {
 .btn-formula-toggle,
 .hist-empty {
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 400;
-    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--text-secondary);
     user-select: none;
@@ -208,7 +209,7 @@ body {
 
 .logo {
     font-family: var(--font-mono);
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
     font-weight: 700;
     letter-spacing: 0.12em;
     color: var(--text-secondary);
@@ -228,9 +229,9 @@ body {
 
 .mode-tab {
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 400;
-    letter-spacing: 0.06em;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     padding: 0 var(--space-md);
     color: var(--text-secondary);
@@ -320,9 +321,9 @@ body {
     background: var(--text-display);
     color: var(--black);
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     cursor: pointer;
     white-space: nowrap;
@@ -366,12 +367,12 @@ body {
 
 select {
     font-family: var(--font-body);
-    font-size: 0.8125rem;
-    font-weight: 400;
+    font-size: 0.9375rem;
+    font-weight: 500;
     color: var(--text-primary);
     background: transparent;
     border: none;
-    border-bottom: 1px solid var(--border-visible);
+    border-bottom: 2px solid var(--border-visible);
     padding: 0.5rem 0.25rem;
     width: 100%;
     cursor: pointer;
@@ -407,10 +408,10 @@ select option {
     align-items: center;
     gap: var(--space-sm);
     font-family: var(--font-body);
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
     color: var(--text-primary);
     cursor: pointer;
-    line-height: 1.5;
+    line-height: 1.6;
     padding: 2px 0;
     user-select: none;
     -webkit-user-select: none;
@@ -463,9 +464,9 @@ select option {
 
 .slider-name {
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 400;
-    letter-spacing: 0.04em;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
     color: var(--text-secondary);
     min-width: 5em;
     flex-shrink: 0;
@@ -514,7 +515,7 @@ select option {
 
 .slider-val {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     font-weight: 700;
     color: var(--text-primary);
     min-width: 3em;
@@ -524,8 +525,8 @@ select option {
 
 textarea {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 400;
+    font-size: 0.875rem;
+    font-weight: 500;
     color: var(--text-primary);
     background: var(--surface-raised);
     border: 1px solid var(--border-visible);
@@ -533,7 +534,7 @@ textarea {
     padding: var(--space-sm);
     width: 100%;
     resize: none;
-    line-height: 1.6;
+    line-height: 1.7;
     transition: border-color var(--duration-fast) var(--ease-out);
 }
 textarea:focus {
@@ -547,15 +548,16 @@ textarea::placeholder {
 
 .tc-hint {
     font-family: var(--font-mono);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     color: var(--text-disabled);
     margin-top: var(--space-xs);
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 .tc-error {
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
     color: var(--accent);
     margin-top: var(--space-xs);
     display: none;
@@ -570,10 +572,11 @@ textarea::placeholder {
     border-radius: var(--radius-xs);
     padding: var(--space-sm) var(--space-sm);
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
     color: var(--text-primary);
     word-break: break-all;
-    line-height: 1.6;
+    line-height: 1.7;
     min-height: 2rem;
 }
 
@@ -606,7 +609,7 @@ textarea::placeholder {
 
 .wp-size-info {
     font-family: var(--font-mono);
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
     color: var(--text-primary);
     font-weight: 700;
     text-align: center;
@@ -628,9 +631,9 @@ textarea::placeholder {
     background: var(--text-display);
     color: var(--black);
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     cursor: pointer;
     transition: opacity var(--duration-fast) var(--ease-out);
@@ -661,9 +664,9 @@ textarea::placeholder {
     background: transparent;
     color: var(--text-primary);
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     cursor: pointer;
     transition:
@@ -696,9 +699,9 @@ textarea::placeholder {
     background: transparent;
     color: var(--text-secondary);
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 400;
-    letter-spacing: 0.04em;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
     cursor: pointer;
     transition:
         color var(--duration-fast) var(--ease-out),
@@ -717,7 +720,8 @@ textarea::placeholder {
 .btn-sm {
     height: 36px;
     padding: 0 var(--space-md);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
+    font-weight: 500;
 }
 
 .btn-formula-toggle {
@@ -781,13 +785,14 @@ textarea::placeholder {
 
 .preset-btn .pn {
     font-family: var(--font-body);
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
     font-weight: 500;
     color: var(--text-primary);
 }
 .preset-btn .ps {
     font-family: var(--font-mono);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 500;
     color: var(--text-secondary);
     margin-top: 1px;
 }
@@ -812,9 +817,9 @@ textarea::placeholder {
     background: transparent;
     color: var(--text-secondary);
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 400;
-    letter-spacing: 0.04em;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     cursor: pointer;
     transition:
@@ -909,7 +914,7 @@ textarea::placeholder {
     color: var(--text-primary);
     text-align: center;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     font-weight: 700;
     outline: none;
     min-width: 0;
@@ -917,8 +922,9 @@ textarea::placeholder {
 
 .pivot-toggle {
     font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.04em;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
     color: var(--text-disabled);
     background: var(--surface);
     border: 1px solid var(--border);
@@ -970,7 +976,8 @@ textarea::placeholder {
     border: 1px dashed var(--border-visible);
     color: var(--text-secondary);
     padding: var(--space-sm);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
+    font-weight: 500;
 }
 .btn-add-strip:hover {
     border-color: var(--text-secondary);
@@ -1089,8 +1096,9 @@ canvas {
 
 .loader-text {
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.04em;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
     color: var(--text-disabled);
 }
 
@@ -1245,7 +1253,7 @@ canvas {
     }
 
     .mode-tab {
-        font-size: 0.625rem;
+        font-size: 0.6875rem;
         padding: 0 var(--space-sm);
         min-height: 30px;
     }
@@ -1253,7 +1261,7 @@ canvas {
     .btn-download {
         height: 32px;
         padding: 0 var(--space-sm);
-        font-size: 0.625rem;
+        font-size: 0.6875rem;
     }
 
     .theme-toggle {
@@ -1275,12 +1283,12 @@ canvas {
     }
 
     .ctrl-label {
-        font-size: 0.625rem;
+        font-size: 0.6875rem;
         margin-top: var(--space-md);
     }
 
     .ctrl-check {
-        font-size: 0.75rem;
+        font-size: 0.8125rem;
     }
 
     .preset-grid {
@@ -1310,7 +1318,7 @@ canvas {
     .btn-primary,
     .btn-secondary {
         height: 40px;
-        font-size: 0.6875rem;
+        font-size: 0.75rem;
         padding: 0 var(--space-md);
     }
 
@@ -1352,7 +1360,7 @@ canvas {
     }
 
     .mode-tab {
-        font-size: 0.5625rem;
+        font-size: 0.625rem;
         padding: 0 10px;
     }
 
@@ -1390,7 +1398,7 @@ canvas {
     }
 
     .pivot-toggle {
-        font-size: 0.5625rem;
+        font-size: 0.625rem;
         padding: 2px 6px;
     }
 
@@ -1419,7 +1427,7 @@ canvas {
     .btn-primary,
     .btn-secondary {
         height: 38px;
-        font-size: 0.625rem;
+        font-size: 0.6875rem;
         padding: 0 var(--space-sm);
     }
 
@@ -1478,7 +1486,7 @@ canvas {
     }
 
     .mode-tab {
-        font-size: 0.5rem;
+        font-size: 0.5625rem;
         padding: 0 8px;
     }
 
@@ -1491,19 +1499,19 @@ canvas {
     }
 
     .slider-name {
-        font-size: 0.625rem;
+        font-size: 0.6875rem;
         min-width: 4em;
     }
 
     .slider-val {
-        font-size: 0.625rem;
+        font-size: 0.6875rem;
         min-width: 2.5em;
     }
 
     .btn-primary,
     .btn-secondary {
         height: 34px;
-        font-size: 0.5625rem;
+        font-size: 0.625rem;
         padding: 0 var(--space-sm);
     }
 
@@ -1519,14 +1527,14 @@ canvas {
         font-size: 0.75rem;
     }
     .preset-btn .ps {
-        font-size: 0.5625rem;
+        font-size: 0.625rem;
     }
 
     .tc-box {
-        font-size: 0.6875rem;
+        font-size: 0.75rem;
     }
 
     select {
-        font-size: 0.75rem;
+        font-size: 0.8125rem;
     }
 }
