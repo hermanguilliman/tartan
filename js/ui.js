@@ -1,6 +1,15 @@
 (function () {
     "use strict";
 
+    (function () {
+        try {
+            var savedTheme = localStorage.getItem("tartan_theme");
+            if (savedTheme === "light" || savedTheme === "dark") {
+                document.documentElement.setAttribute("data-theme", savedTheme);
+            }
+        } catch (e) {}
+    })();
+
     var canvasEl = document.getElementById("canvas");
     var loaderEl = document.getElementById("loader");
     var containerEl = document.getElementById("canvasContainer");
@@ -125,13 +134,7 @@
 
         if (clanName) {
             var matchedName = findClanByTokens(tokens);
-            if (matchedName) {
-                clanName.textContent = matchedName;
-                clanName.style.color = "var(--accent2)";
-            } else {
-                clanName.textContent = "Индивидуальный узор";
-                clanName.style.color = "var(--muted)";
-            }
+            clanName.textContent = matchedName || "Индивидуальный узор";
         }
 
         syncBuilderFromTokens(tokens);
@@ -386,13 +389,7 @@
         if (tcDisplay) tcDisplay.textContent = settToTCString(currentTokens);
         if (clanName) {
             var matchedName = findClanByTokens(currentTokens);
-            if (matchedName) {
-                clanName.textContent = matchedName;
-                clanName.style.color = "var(--accent2)";
-            } else {
-                clanName.textContent = "Индивидуальный узор";
-                clanName.style.color = "var(--muted)";
-            }
+            clanName.textContent = matchedName || "Индивидуальный узор";
         }
     }
 
@@ -737,7 +734,6 @@
         if (dlBtn) {
             dlBtn.querySelector(".btn-dl-text").textContent =
                 mode === "pattern" ? "Скачать PNG" : "Скачать обои";
-            dlBtn.classList.toggle("wp-mode", mode === "wallpaper");
         }
 
         renderNow();
@@ -920,5 +916,22 @@
         }, 10);
     } else {
         generate();
+    }
+
+    var themeToggle = document.getElementById("themeToggle");
+    if (themeToggle) {
+        themeToggle.addEventListener("click", function () {
+            var html = document.documentElement;
+            var current =
+                html.getAttribute("data-theme") ||
+                (window.matchMedia("(prefers-color-scheme: light)").matches
+                    ? "light"
+                    : "dark");
+            var next = current === "dark" ? "light" : "dark";
+            html.setAttribute("data-theme", next);
+            try {
+                localStorage.setItem("tartan_theme", next);
+            } catch (e) {}
+        });
     }
 })();
