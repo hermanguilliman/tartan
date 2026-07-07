@@ -898,7 +898,7 @@ textarea::placeholder {
     height: 100%;
     cursor: pointer;
     font-family: var(--font-mono);
-    font-size: 0.875rem;
+    font-size: 1.2rem;
     font-weight: 400;
     display: flex;
     align-items: center;
@@ -930,7 +930,7 @@ textarea::placeholder {
 .pivot-toggle {
     font-family: var(--font-mono);
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 800;
     letter-spacing: 0.06em;
     color: var(--text-disabled);
     background: var(--surface);
@@ -980,11 +980,11 @@ textarea::placeholder {
 
 .btn-add-strip {
     width: 100%;
-    border: 1px dashed var(--border-visible);
+    border: 1px solid var(--border-visible);
     color: var(--text-secondary);
     padding: var(--space-sm);
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: 0.85rem;
+    font-weight: 600;
 }
 .btn-add-strip:hover {
     border-color: var(--text-secondary);
