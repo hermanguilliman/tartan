@@ -183,6 +183,13 @@ body {
     flex-direction: column;
 }
 
+/* Prevent the sidebar flex column from squashing tall children (e.g. a
+   multi-line .tc-box for long patterns) below their content height, which
+   made the wrapped pattern text overflow under the color swatches. */
+.sidebar > * {
+    flex-shrink: 0;
+}
+
 .preview {
     display: flex;
     flex-direction: column;
