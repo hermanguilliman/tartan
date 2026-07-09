@@ -1,4 +1,4 @@
-var CACHE = "tartan-v1";
+var CACHE = "tartan-v2";
 
 var ASSETS = [
     "./",
@@ -12,14 +12,13 @@ var ASSETS = [
     "./js/renderer.js",
     "./js/ui.js",
     "./assets/icon.png",
-    "./assets/favicon-light-32.png",
-    "./assets/favicon-light-128.png",
-    "./assets/favicon-light-180.png",
-    "./assets/favicon-light-192.png",
-    "./assets/favicon-dark-32.png",
-    "./assets/favicon-dark-128.png",
-    "./assets/favicon-dark-180.png",
-    "./assets/favicon-dark-192.png",
+    "./assets/og-image.png",
+    "./assets/favicon.ico",
+    "./assets/favicon-16x16.png",
+    "./assets/favicon-32x32.png",
+    "./assets/favicon-128x128.png",
+    "./assets/favicon-192x192.png",
+    "./assets/apple-touch-icon.png",
 ];
 
 self.addEventListener("install", function (e) {
