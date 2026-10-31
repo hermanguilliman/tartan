@@ -1,4 +1,4 @@
-var CACHE = "tartan-v2";
+var CACHE = "tartan-v3";
 
 var ASSETS = [
     "./",
@@ -13,9 +13,11 @@ var ASSETS = [
     "./js/ui.js",
     "./assets/icon.png",
     "./assets/og-image.png",
+    "./assets/favicon.svg",
     "./assets/favicon.ico",
     "./assets/favicon-16x16.png",
     "./assets/favicon-32x32.png",
+    "./assets/favicon-120x120.png",
     "./assets/favicon-128x128.png",
     "./assets/favicon-192x192.png",
     "./assets/apple-touch-icon.png",
