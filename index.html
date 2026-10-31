@@ -5,21 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Генератор тартана — шотландские узоры и обои онлайн</title>
+    <title>Генератор тартана онлайн — бесшовные шотландские клетчатые узоры, текстуры и обои 4K</title>
     <meta name="description"
-        content="Бесплатный онлайн-генератор тартана. Создавайте аутентичные шотландские клетчатые узоры по нотации и скачивайте обои для iPhone, Android и ПК в Full HD, 4K.">
+        content="Бесплатный онлайн-генератор тартана и шотландской клетки. Создавайте бесшовные клетчатые узоры по формуле Thread Count и скачивайте текстуры и обои для iPhone, Android и ПК в Full HD и 4K.">
     <meta name="keywords"
-        content="генератор тартана, шотландский узор, тартан онлайн, клетчатый орнамент, обои тартан, tartan generator, thread count, шотландская клетка">
-    <meta name="author" content="tartan.guilliman.ru">
+        content="генератор тартана, шотландский узор, тартан онлайн, бесшовная текстура клетки, клетчатый орнамент, обои тартан 4k, tartan generator, thread count, шотландская клетка паттерн">
+    <meta name="author" content="Herman Guilliman">
     <meta name="yandex-verification" content="51133ed144e8f7d1" />
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://tartan.guilliman.ru/">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://tartan.guilliman.ru/">
-    <meta property="og:title" content="Генератор тартана — шотландские узоры онлайн">
+    <meta property="og:title" content="Генератор тартана — шотландские клетчатые узоры и обои онлайн">
     <meta property="og:description"
-        content="Создавайте аутентичные тартаны по нотации Thread Count. Скачивайте обои в разрешении вашего устройства — бесплатно.">
+        content="Создавайте аутентичные тартаны по нотации Thread Count. Скачивайте бесшовные текстуры и обои в разрешении вашего устройства — бесплатно.">
     <meta property="og:image" content="https://tartan.guilliman.ru/assets/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -38,10 +38,15 @@
       "@type": "WebApplication",
       "name": "Генератор тартана",
       "url": "https://tartan.guilliman.ru/",
-      "description": "Бесплатный онлайн-генератор аутентичных шотландских тартанов с поддержкой нотации Thread Count и экспортом обоев в Full HD и 4K.",
+      "description": "Бесплатный онлайн-генератор аутентичных шотландских тартанов с поддержкой нотации Thread Count, бесшовных текстур и экспортом обоев в Full HD и 4K.",
       "applicationCategory": "DesignApplication",
       "operatingSystem": "Any",
       "browserRequirements": "Requires JavaScript",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "Guilliman's Lab",
+        "url": "https://guilliman.ru/"
+      },
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -51,9 +56,10 @@
       "featureList": [
         "Генерация тартана по нотации Thread Count",
         "15 базовых цветов с тёмными и светлыми вариантами",
+        "Текстура саржи 2/2, шерсти, шёлка и плоского вектора",
         "Экспорт обоев для iPhone, Android и ПК до 4K",
         "Режимы: заполнение, мозаика, градиент",
-        "История паттернов",
+        "История паттернов и определение клана",
         "Работа без интернета (PWA)"
       ],
       "screenshot": "https://tartan.guilliman.ru/assets/og-image.png"
@@ -74,23 +80,206 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="manifest" href="manifest.json">
 
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Doto:wght@400..900&family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Doto:wght@400..900&family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
 
     <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Стили для кнопки и всплывающего окна проектов Guilliman's Lab -->
+    <style>
+        .hub-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 6px;
+            border: 1px solid rgba(128, 128, 128, 0.35);
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 6px;
+            transition: border-color 0.2s, opacity 0.2s;
+            opacity: 0.85;
+        }
+
+        .hub-btn:hover {
+            opacity: 1;
+            border-color: currentColor;
+        }
+
+        .hub-dialog {
+            margin: auto;
+            width: min(680px, calc(100vw - 32px));
+            max-height: calc(100vh - 48px);
+            background: #121214;
+            color: #ededed;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 14px;
+            padding: 0;
+            overflow: hidden;
+            font-family: "Space Grotesk", system-ui, sans-serif;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7);
+        }
+
+        html[data-theme="light"] .hub-dialog {
+            background: #ffffff;
+            color: #141414;
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .hub-dialog[open] {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hub-dialog::backdrop {
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+        }
+
+        .hub-dialog__head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(128, 128, 128, 0.22);
+            flex-shrink: 0;
+        }
+
+        .hub-dialog__title {
+            font-family: "Space Mono", monospace;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .hub-dialog__close {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            border: 1px solid rgba(128, 128, 128, 0.35);
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .hub-dialog__body {
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            user-select: text;
+        }
+
+        .hub-grid-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 8px;
+        }
+
+        .hub-link-card {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 10px 12px;
+            background: rgba(128, 128, 128, 0.08);
+            border: 1px solid rgba(128, 128, 128, 0.22);
+            border-radius: 8px;
+            text-decoration: none;
+            color: inherit;
+            transition: border-color 0.2s, transform 0.15s;
+        }
+
+        .hub-link-card:hover {
+            border-color: currentColor;
+            transform: translateY(-1px);
+        }
+
+        .hub-link-card b {
+            font-family: "Space Mono", monospace;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .hub-link-card span {
+            font-size: 11px;
+            opacity: 0.72;
+            line-height: 1.35;
+        }
+
+        .hub-seo-text {
+            font-size: 12.5px;
+            line-height: 1.6;
+            opacity: 0.85;
+            border-top: 1px solid rgba(128, 128, 128, 0.22);
+            padding-top: 16px;
+        }
+
+        .hub-seo-text h2 {
+            font-family: "Space Mono", monospace;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin: 0 0 8px;
+        }
+
+        .hub-seo-text p {
+            margin: 0 0 8px;
+        }
+    </style>
+
+    <!-- Yandex.RTB -->
+    <script>window.yaContextCb = window.yaContextCb || []</script>
+    <script src="https://yandex.ru/ads/system/context.js" async></script>
 </head>
 
 <body>
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+            (function (m, e, t, r, i, k, a) {
+                m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments) };
+                m[i].l = 1 * new Date();
+                for (var j = 0; j < document.scripts.length; j++) { if (document.scripts[j].src === r) { return; } }
+                k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
+            })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js?id=113961510', 'ym');
+
+        ym(113961510, 'init', { ssr: true, webvisor: true, clickmap: true, ecommerce: "dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce: true, trackLinks: true });
+    </script>
+    <noscript>
+        <div><img src="https://mc.yandex.ru/watch/113961510" style="position:absolute; left:-9999px;" alt="" /></div>
+    </noscript>
+    <!-- /Yandex.Metrika counter -->
 
     <header class="topbar">
-        <span class="logo">ТАРТАН</span>
+        <h1 class="logo" style="margin: 0; font-size: inherit; font-weight: inherit;">ТАРТАН</h1>
         <nav class="mode-tabs" aria-label="Режим приложения">
             <button class="mode-tab active" data-mode="pattern">Узор</button>
             <button class="mode-tab" data-mode="wallpaper">Обои</button>
         </nav>
         <div class="topbar-spacer"></div>
+        <button type="button" class="hub-btn" id="hubBtn" aria-label="Все проекты Guilliman's Lab"
+            title="Все проекты Guilliman's Lab">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+            </svg>
+        </button>
         <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему" title="Переключить тему">
             <span class="theme-icon-light" aria-hidden="true">○</span>
             <span class="theme-icon-dark" aria-hidden="true">●</span>
@@ -112,7 +301,7 @@
 
         <aside class="sidebar" aria-label="Панель управления">
 
-            
+
             <span class="ctrl-label">Цвет</span>
             <div class="ctrl-row">
                 <select id="dominant">
@@ -136,7 +325,7 @@
                 <div class="color-dot" id="colorDot"></div>
             </div>
 
-            
+
             <span class="ctrl-label">Ткань</span>
             <label class="ctrl-check">
                 <input type="checkbox" id="texture" checked>
@@ -147,7 +336,7 @@
                 <span>Разные цвета основы и утка</span>
             </label>
 
-            
+
             <div class="ctrl-row">
                 <span class="ctrl-label-inline">Стиль нити</span>
                 <select id="threadStyle">
@@ -158,14 +347,14 @@
                 </select>
             </div>
 
-            
+
             <div class="ctrl-slider">
                 <span class="slider-name">Плотность</span>
                 <input type="range" id="density" min="0.5" max="5" step="0.5" value="1">
                 <span class="slider-val" id="densityLabel">1×</span>
             </div>
 
-            
+
             <span class="ctrl-label">Тон</span>
             <select id="tone">
                 <option value="any">Любой</option>
@@ -177,7 +366,7 @@
 
             <div class="section-divider"></div>
 
-            
+
             <div id="patternControls">
                 <span class="ctrl-label">Конструктор узора</span>
                 <div id="stripBuilderList" class="strip-builder-list"></div>
@@ -199,7 +388,7 @@
                 </div>
             </div>
 
-            
+
             <div id="wallpaperControls" style="display:none">
                 <span class="ctrl-label">Устройство</span>
 
@@ -299,7 +488,7 @@
 
             <div class="section-divider"></div>
 
-            
+
             <span class="ctrl-label">Паттерн</span>
             <div class="tc-box" id="tcDisplay">—</div>
             <div class="palette-row" id="paletteRow"></div>
@@ -307,7 +496,7 @@
 
             <div class="section-divider"></div>
 
-            
+
             <div id="patternExport">
                 <span class="ctrl-label">Размер узора</span>
                 <div class="ctrl-slider">
@@ -337,14 +526,17 @@
                 <button class="btn-primary" id="generateBtn">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        <polygon
+                            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                        </polygon>
                     </svg>
                     Создать
                 </button>
                 <button class="btn-secondary" id="randomBtn">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"></path>
+                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2">
+                        </path>
                     </svg>
                     Случайный
                 </button>
@@ -356,6 +548,79 @@
         </section>
 
     </main>
+
+    <!-- Модальное окно: Все проекты Guilliman's Lab + РСЯ + SEO-описание -->
+    <dialog class="hub-dialog" id="hubDialog" aria-labelledby="hubDialogTitle">
+        <div class="hub-dialog__head">
+            <span class="hub-dialog__title" id="hubDialogTitle">Guilliman's Lab — Все проекты и о сервисе</span>
+            <button type="button" class="hub-dialog__close" id="hubCloseBtn" aria-label="Закрыть">✕</button>
+        </div>
+        <div class="hub-dialog__body">
+            <nav aria-label="Проекты Guilliman's Lab">
+                <div class="hub-grid-links">
+                    <a class="hub-link-card" href="https://guilliman.ru/" target="_blank" rel="noopener">
+                        <b>guilliman.ru <span>↗</span></b>
+                        <span>Центральный хаб всех проектов и утилит</span>
+                    </a>
+                    <a class="hub-link-card" href="https://blog.guilliman.ru/" target="_blank" rel="noopener">
+                        <b>blog.guilliman.ru <span>↗</span></b>
+                        <span>Блог — статьи, заметки и публикации</span>
+                    </a>
+                    <a class="hub-link-card" href="https://radio.guilliman.ru/" target="_blank" rel="noopener">
+                        <b>radio.guilliman.ru <span>↗</span></b>
+                        <span>Онлайн-радио и генератор плейлистов M3U8</span>
+                    </a>
+                    <a class="hub-link-card" href="https://input.guilliman.ru/" target="_blank" rel="noopener">
+                        <b>input.guilliman.ru <span>↗</span></b>
+                        <span>Диагностика мыши, клавиатуры и периферии</span>
+                    </a>
+                    <a class="hub-link-card" href="https://stl.guilliman.ru/" target="_blank" rel="noopener">
+                        <b>stl.guilliman.ru <span>↗</span></b>
+                        <span>Онлайн 3D-просмотрщик STL-моделей</span>
+                    </a>
+                    <a class="hub-link-card" href="https://password.guilliman.ru/" target="_blank" rel="noopener">
+                        <b>password.guilliman.ru <span>↗</span></b>
+                        <span>Генератор криптостойких паролей</span>
+                    </a>
+                    <a class="hub-link-card" href="https://md.guilliman.ru/" target="_blank" rel="noopener">
+                        <b>md.guilliman.ru <span>↗</span></b>
+                        <span>Быстрый конвертер HTML в Markdown</span>
+                    </a>
+                    <a class="hub-link-card" href="https://keytag.guilliman.ru/" target="_blank" rel="noopener">
+                        <b>keytag.guilliman.ru <span>↗</span></b>
+                        <span>Редактор и печать бирок для ключей</span>
+                    </a>
+                    <a class="hub-link-card" href="https://walgen.guilliman.ru/" target="_blank" rel="noopener">
+                        <b>walgen.guilliman.ru <span>↗</span></b>
+                        <span>Генератор обоев по формулам</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Yandex.RTB R-A-20314425-1 -->
+            <div id="yandex_rtb_R-A-20314425-1"></div>
+
+            <section class="hub-seo-text" aria-label="О генераторе шотландского тартана">
+                <h2>Онлайн-генератор шотландского тартана: бесшовные текстуры клетки и обои 4K</h2>
+                <p>
+                    <strong>ТАРТАН (tartan.guilliman.ru)</strong> — бесплатный онлайн-конструктор аутентичных
+                    шотландских
+                    клетчатых орнаментов. Создавайте бесшовные текстуры шотландской клетки вручную или по официальной
+                    ткацкой
+                    нотации <strong>Thread Count</strong>, выбирайте переплетение саржи 2/2, текстуру мягкой шерсти,
+                    глянцевого
+                    шёлка или плоского вектора для графического дизайна и 3D-визуализации.
+                </p>
+                <p>
+                    В режиме <strong>«Обои»</strong> вы можете сгенерировать и скачать клетчатые фоны в формате PNG для
+                    ПК
+                    (Full HD, QHD, 4K UHD, Ultrawide), смартфонов Android и iPhone (до Pro Max) с настройкой плотности
+                    нитей,
+                    мозаики, градиента и мягкой виньетки.
+                </p>
+            </section>
+        </div>
+    </dialog>
 
     <div class="popover-backdrop" id="popoverBackdrop"></div>
 
@@ -370,6 +635,35 @@
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js');
         }
+    </script>
+
+    <!-- Логика открытия окна проектов и отложенного рендера РСЯ -->
+    <script>
+        (function () {
+            const btn = document.getElementById('hubBtn');
+            const dlg = document.getElementById('hubDialog');
+            const closeBtn = document.getElementById('hubCloseBtn');
+            let adRendered = false;
+
+            if (btn && dlg) {
+                btn.addEventListener('click', () => {
+                    dlg.showModal();
+                    if (!adRendered) {
+                        adRendered = true;
+                        window.yaContextCb.push(() => {
+                            Ya.Context.AdvManager.render({
+                                "blockId": "R-A-20314425-1",
+                                "renderTo": "yandex_rtb_R-A-20314425-1"
+                            });
+                        });
+                    }
+                });
+                closeBtn?.addEventListener('click', () => dlg.close());
+                dlg.addEventListener('click', (e) => {
+                    if (e.target === dlg) dlg.close();
+                });
+            }
+        })();
     </script>
 
 </body>
